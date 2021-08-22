@@ -1,13 +1,13 @@
 const Twitter = require("twitter");
 const csvjson = require("csvjson");
 const fs = require("fs");
-require('dotenv').config();
+require("dotenv").config();
 
-var client = new Twitter({
+const client = new Twitter({
   consumer_key: process.env.CONSUMER_KEY,
   consumer_secret: process.env.CONSUMER_SECRET,
   access_token_key: process.env.ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.ACCESS_TOKEN_SECRET
+  access_token_secret: process.env.ACCESS_TOKEN_SECRET,
 });
 
 const getTweets = (params) =>
@@ -18,7 +18,7 @@ const getTweets = (params) =>
           tweets.map((item) => ({
             id: item.id,
             timestamp: +new Date(item.created_at),
-            text: item.text
+            text: item.text,
           }))
         );
       } else {
@@ -29,9 +29,8 @@ const getTweets = (params) =>
 
 const readCsv = (path) => {
   try {
-    var data = fs.readFileSync(path, { encoding: "utf8" });
-
-    var options = {
+    const data = fs.readFileSync(path, { encoding: "utf8" });
+    const options = {
       delimiter: ",",
       quote: '"',
     };
@@ -53,25 +52,19 @@ const writeCsv = (data, path) => {
   });
 };
 
-const textPath = "../Data/texts.csv"
+const textPath = "../Data/texts.csv";
 const accountPath = "../Data/accounts.csv";
-
 const allTweets = readCsv(textPath);
 const accounts = readCsv(accountPath).map((item) => item.name);
 
 (async () => {
   for (let account of accounts) {
-    var params = { screen_name: account, count: 1 };
+    let params = { screen_name: account, count: 10 };
     data = await getTweets(params);
     allTweets.push(...data);
   }
   console.log(allTweets);
-  writeCsv(allTweets, textPath)
+  writeCsv(allTweets, textPath);
 })();
 
-
-
-
-
-
-// First deduplicate by Id, then sort by date, finally select just those which are for today
+// First deduplicate the CSV by Id, then sort by date, finally select just those which are for today
