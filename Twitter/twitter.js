@@ -1,12 +1,13 @@
 const Twitter = require("twitter");
 const csvjson = require("csvjson");
 const fs = require("fs");
+require('dotenv').config();
 
 var client = new Twitter({
-  consumer_key: "JcgZIw8AGGoxRVrG0P8ScSlcT",
-  consumer_secret: "61nmWy43Y62RVTDt4WbiSvO3EvwoZ78yLKcHnGwzmpFGWcHgHi",
-  access_token_key: "1429147109916385287-T93CwHuSmjs6TSv0vzqfxmsdKnv4EE",
-  access_token_secret: "ivrJl0qUjaT5EO1ZOLM3Ni2u7Lbb0POwPQr4VskeSqE0n",
+  consumer_key: process.env.CONSUMER_KEY,
+  consumer_secret: process.env.CONSUMER_SECRET,
+  access_token_key: process.env.ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.ACCESS_TOKEN_SECRET
 });
 
 const getTweets = (params) =>
