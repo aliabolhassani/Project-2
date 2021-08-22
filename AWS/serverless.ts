@@ -1,6 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
-import hello from '@functions/hello';
+import registerPositions from '@functions/registerPositions';
+import processPositions from '@functions/processPositions';
 
 const serverlessConfiguration: AWS = {
   service: 'aws',
@@ -25,7 +26,7 @@ const serverlessConfiguration: AWS = {
     lambdaHashingVersion: '20201221',
   },
   // import the function via paths
-  functions: { hello },
+  functions: { registerPositions, processPositions },
 };
 
 module.exports = serverlessConfiguration;
