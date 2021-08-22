@@ -59,7 +59,7 @@ const accounts = readCsv(accountPath).map((item) => item.name);
 
 (async () => {
   for (let account of accounts) {
-    let params = { screen_name: account, count: 10 };
+    let params = { screen_name: account, count: 20 };
     data = await getTweets(params);
     allTweets.push(...data);
   }
