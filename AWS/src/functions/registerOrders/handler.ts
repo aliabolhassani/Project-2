@@ -6,32 +6,29 @@ import schema from "./schema";
 import * as AWS from "aws-sdk";
 import { AWSConfigs } from "../../../AWSConfigs";
 import { v4 as uuidv4 } from "uuid";
-let colors = require("colors/safe");
+const colors = require("colors/safe");
 
 const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
   async (event) => {
     await createTable();
 
-    /* 
-// {
-//   "origin": "mlTrader", // || "tradingView" || "bot"
-//   "currency": "LINK/USDT",
-//   "entry": [19.086, 18.233, 16.903],
-//   "margin": 1,
-//   "market": "binance",
-//   "position": "buy", // || "sell"
-//   "stoploss": 15.536,
-//   "target": [19.863, 20.709, 23.132]
-// }
-// "body": "{\"name\": \"Frederic\"}"
-*/
-
+    // {
+    //   "origin": "mlTrader", // || "tradingView" || "bot"
+    //   "currency": "LINK/USDT",
+    //   "entry": [19.086, 18.233, 16.903],
+    //   "margin": 1,
+    //   "market": "binance",
+    //   "position": "buy", // || "sell"
+    //   "stoploss": 15.536,
+    //   "target": [19.863, 20.709, 23.132]
+    // }
+    
     const orderId = await putItem({
       ...event.body,
     });
 
     const info = await getItem(orderId);
-    console.log(colors.yellow(JSON.stringify(info)));
+    console.log(colors.white(JSON.stringify(info, null, 2)));
 
     return formatJSONResponse({
       message: event.body,
