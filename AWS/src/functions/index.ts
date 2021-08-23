@@ -1,2 +1,2 @@
-export { default as registerPositions } from './registerPositions';
-export { default as processPositions } from './processPositions';
+export { default as registerOrders } from './registerOrders';
+export { default as processOrders } from './processOrders';

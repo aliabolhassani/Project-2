@@ -7,7 +7,7 @@ export default {
     {
       http: {
         method: 'post',
-        path: 'processPositions',
+        path: 'registerOrders',
         request: {
           schema: {
             'application/json': schema
