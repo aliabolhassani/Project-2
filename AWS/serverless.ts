@@ -1,7 +1,6 @@
 import type { AWS } from "@serverless/typescript";
 import registerOrders from "@functions/registerOrders";
 import processOrders from "@functions/processOrders";
-require("dotenv").config();
 
 const serverlessConfiguration: AWS = {
   service: "aws",
@@ -27,6 +26,7 @@ const serverlessConfiguration: AWS = {
   },
   // import the function via paths
   functions: { registerOrders, processOrders },
+  useDotenv: true
 };
 
 module.exports = serverlessConfiguration;

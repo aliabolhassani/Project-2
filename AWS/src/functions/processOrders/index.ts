@@ -9,7 +9,7 @@ export default {
         method: 'post',
         path: 'processOrders',
         request: {
-          schema: {
+          schemas: {
             'application/json': schema
           }
         }

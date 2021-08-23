@@ -9,7 +9,7 @@ export default {
         method: 'post',
         path: 'registerOrders',
         request: {
-          schema: {
+          schemas: {
             'application/json': schema
           }
         }
