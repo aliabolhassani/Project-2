@@ -105,6 +105,18 @@ const buyOrder = async (currency: string, amount: number): Promise<{}> => {
   );
 };
 
+const sellOrder = async (currency: string, amount: number): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      const id = Math.random();
+      resolve(id);
+    }
+  );
+};
+
 const getPrice = async (text, currency: any): Promise<number> => {
   return new Promise(
     async (
@@ -120,7 +132,7 @@ const getPrice = async (text, currency: any): Promise<number> => {
 };
 
 const martingaleSteps = [15, 30, 55];
-const buyTolerance = 1.005;
+const priceTolerance = 0.005;
 
 const adjustTarget1 = async (item: any): Promise<{}> => {
   return new Promise(
@@ -128,7 +140,61 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      
+      resolve({});
+    }
+  );
+};
+
+const adjustTarget2 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      resolve({});
+    }
+  );
+};
+
+const adjustStoploss1 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      resolve({});
+    }
+  );
+};
+
+const adjustStoploss2 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      resolve({});
+    }
+  );
+};
+
+const adjustStoploss3 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      resolve({});
+    }
+  );
+};
+
+const adjustStoploss4 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
       resolve({});
     }
   );
@@ -144,7 +210,7 @@ const handleEntries = async (item: any): Promise<{}> => {
 
       if (!item.fulfilledEntries.length) {
         // Entry1
-        if (price <= item.entry[0] * buyTolerance) {
+        if (price <= item.entry[0] * (1 + priceTolerance)) {
           await buyOrder(item.currency, item.amount);
           item.fulfilledEntries.push(price);
 
@@ -161,9 +227,12 @@ const handleEntries = async (item: any): Promise<{}> => {
             }
           );
         }
-      } else if (item.fulfilledEntries.length === 1) {
+      } else if (
+        item.fulfilledEntries.length === 1 &&
+        !item.fulfilledTargets.length
+      ) {
         // Entry2
-        if (price <= item.entry[1] * buyTolerance) {
+        if (price <= item.entry[1] * (1 + priceTolerance)) {
           await buyOrder(
             item.currency,
             (item.amount * martingaleSteps[1]) / martingaleSteps[0]
@@ -184,10 +253,14 @@ const handleEntries = async (item: any): Promise<{}> => {
           );
 
           await adjustTarget1(item);
+          await adjustStoploss3(item);
         }
-      } else if (item.fulfilledEntries.length === 2) {
+      } else if (
+        item.fulfilledEntries.length === 2 &&
+        !item.fulfilledTargets.length
+      ) {
         // Entry3
-        if (price <= item.entry[2] * buyTolerance) {
+        if (price <= item.entry[2] * (1 + priceTolerance)) {
           await buyOrder(
             item.currency,
             (item.amount * martingaleSteps[2]) / martingaleSteps[0]
@@ -206,7 +279,9 @@ const handleEntries = async (item: any): Promise<{}> => {
               ":x": item.fulfilledEntries,
             }
           );
-          await adjustTarget1(item);
+
+          await adjustTarget2(item);
+          await adjustStoploss4(item);
         }
       }
 
@@ -222,6 +297,84 @@ const checkTargets = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const price = await getPrice("checkTargets", item.currency);
+
+      if (item.fulfilledEntries.length && !item.fulfilledTargets.length) {
+        // Target1
+        if (price >= item.target[0] * (1 - priceTolerance)) {
+          await sellOrder(
+            item.currency,
+            (item.amount * martingaleSteps[0]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
+          );
+          item.fulfilledTargets.push(price);
+
+          console.log(colors.magenta("Target1 fulfilled."));
+
+          await updateItem(
+            item.orderId,
+            "set #fulfilledTargets = :x",
+            {
+              "#fulfilledTargets": "fulfilledTargets",
+            },
+            {
+              ":x": item.fulfilledTargets,
+            }
+          );
+
+          await adjustStoploss1(item);
+        }
+      } else if (
+        item.fulfilledEntries.length &&
+        item.fulfilledTargets.length === 1
+      ) {
+        // Target2
+        if (price >= item.target[1] * (1 - priceTolerance)) {
+          await sellOrder(
+            item.currency,
+            (item.amount * martingaleSteps[1]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
+          );
+          item.fulfilledTargets.push(price);
+
+          console.log(colors.magenta("Target2 fulfilled."));
+
+          await updateItem(
+            item.orderId,
+            "set #fulfilledTargets = :x",
+            {
+              "#fulfilledTargets": "fulfilledTargets",
+            },
+            {
+              ":x": item.fulfilledTargets,
+            }
+          );
+
+          await adjustStoploss2(item);
+        }
+      } else if (
+        item.fulfilledEntries.length &&
+        item.fulfilledTargets.length === 2
+      ) {
+        // Target3
+        if (price >= item.target[3] * (1 - priceTolerance)) {
+          await sellOrder(
+            item.currency,
+            (item.amount * martingaleSteps[2]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
+          );
+          item.fulfilledTargets.push(price);
+
+          console.log(colors.magenta("Target3 fulfilled."));
+
+          await updateItem(
+            item.orderId,
+            "set #fulfilledTargets = :x",
+            {
+              "#fulfilledTargets": "fulfilledTargets",
+            },
+            {
+              ":x": item.fulfilledTargets,
+            }
+          );
+        }
+      }
 
       resolve(item);
     }
@@ -242,6 +395,17 @@ const processBuy = async (item: any): Promise<{}> => {
   );
 };
 
+const checkSignalValidity = async (item: any): Promise<string> => {
+  return new Promise(
+    async (
+      resolve: (value?: string | PromiseLike<string>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      resolve("valid");
+    }
+  );
+};
+
 const processSignals = async (item: any): Promise<{}> => {
   return new Promise(
     async (
@@ -249,7 +413,11 @@ const processSignals = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       if (item.position === "buy") {
-        processBuy(item).then(() => resolve(item));
+        checkSignalValidity(item).then((status: string) => {
+          if (status === "valid") {
+            processBuy(item).then(() => resolve(item));
+          }
+        });
       } else {
         resolve(item);
       }
