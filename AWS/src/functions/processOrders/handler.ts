@@ -105,14 +105,14 @@ const buyOrder = async (currency: string, amount: number): Promise<{}> => {
   );
 };
 
-const getPrice = async (currency: any): Promise<number> => {
+const getPrice = async (text, currency: any): Promise<number> => {
   return new Promise(
     async (
       resolve: (value?: number | PromiseLike<number>) => void,
       reject: (reason?: any) => void
     ) => {
       // const price = 1000;
-      console.log("Input price:");
+      console.log(colors.white(text));
       const price = parseInt(<string>await getKey(), 10);
       resolve(price);
     }
@@ -122,15 +122,28 @@ const getPrice = async (currency: any): Promise<number> => {
 const martingaleSteps = [15, 30, 55];
 const buyTolerance = 1.005;
 
+const adjustTarget1 = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      
+      resolve({});
+    }
+  );
+};
+
 const handleEntries = async (item: any): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
+      const price = await getPrice("handleEntries", item.currency);
+
       if (!item.fulfilledEntries.length) {
         // Entry1
-        const price = await getPrice(item.currency);
         if (price <= item.entry[0] * buyTolerance) {
           await buyOrder(item.currency, item.amount);
           item.fulfilledEntries.push(price);
@@ -150,7 +163,6 @@ const handleEntries = async (item: any): Promise<{}> => {
         }
       } else if (item.fulfilledEntries.length === 1) {
         // Entry2
-        const price = await getPrice(item.currency);
         if (price <= item.entry[1] * buyTolerance) {
           await buyOrder(
             item.currency,
@@ -170,10 +182,11 @@ const handleEntries = async (item: any): Promise<{}> => {
               ":x": item.fulfilledEntries,
             }
           );
+
+          await adjustTarget1(item);
         }
       } else if (item.fulfilledEntries.length === 2) {
         // Entry3
-        const price = await getPrice(item.currency);
         if (price <= item.entry[2] * buyTolerance) {
           await buyOrder(
             item.currency,
@@ -193,8 +206,22 @@ const handleEntries = async (item: any): Promise<{}> => {
               ":x": item.fulfilledEntries,
             }
           );
+          await adjustTarget1(item);
         }
       }
+
+      resolve(item);
+    }
+  );
+};
+
+const checkTargets = async (item: any): Promise<{}> => {
+  return new Promise(
+    async (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      const price = await getPrice("checkTargets", item.currency);
 
       resolve(item);
     }
@@ -208,6 +235,7 @@ const processBuy = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       item = await handleEntries(item);
+      item = await checkTargets(item);
 
       resolve(item);
     }
