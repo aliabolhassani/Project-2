@@ -1,12 +1,12 @@
 import * as AWS from "aws-sdk";
-import { AWSConfigs } from "../../AWSConfigs";
+import { awsConfigs } from "../../awsConfigs";
 import { v4 as uuidv4 } from "uuid";
 
 AWS.config.update({
-  endpoint: AWSConfigs.endpoint,
-  region: AWSConfigs.region,
-  accessKeyId: AWSConfigs.accessKeyId,
-  secretAccessKey: AWSConfigs.secretAccessKey,
+  endpoint: awsConfigs.endpoint,
+  region: awsConfigs.region,
+  accessKeyId: awsConfigs.accessKeyId,
+  secretAccessKey: awsConfigs.secretAccessKey,
 } as any);
 
 const dynamodb = new AWS.DynamoDB();
@@ -28,7 +28,7 @@ export const getItem = (orderId: string): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const query = {
-        TableName: "orders",
+        TableName: "Orders",
         KeyConditionExpression: "#id = :orderId",
         ExpressionAttributeNames: {
           "#id": "orderId",
@@ -60,21 +60,13 @@ export const updateItem = (
       reject: (reason?: any) => void
     ) => {
       const params = {
-        TableName: "orders",
+        TableName: "Orders",
         Key: {
           orderId: orderId,
         },
         UpdateExpression,
         ExpressionAttributeNames,
         ExpressionAttributeValues,
-        // UpdateExpression: "set testKey = :x, #leverage = :y",
-        // ExpressionAttributeNames: {
-        //   "#leverage": "leverage",
-        // },
-        // ExpressionAttributeValues: {
-        //   ":x": someNewValue,
-        //   ":y": 1000,
-        // },
       };
 
       docClient.update(params, (err, data) => {
@@ -97,7 +89,7 @@ export const putItem = (content: object): Promise<string> => {
     ) => {
       const orderId = uuidv4();
       const docParams = {
-        TableName: "orders",
+        TableName: "Orders",
         Item: {
           orderId: orderId,
           ...content,
@@ -116,7 +108,7 @@ export const putItem = (content: object): Promise<string> => {
 };
 
 export const createTable = (): Promise<any> => {
-  const tableName = "orders";
+  const tableName = "Orders";
 
   return new Promise(
     (
@@ -132,8 +124,8 @@ export const createTable = (): Promise<any> => {
               { AttributeName: "orderId", AttributeType: "S" },
             ],
             ProvisionedThroughput: {
-              ReadCapacityUnits: 1000,
-              WriteCapacityUnits: 1000,
+              ReadCapacityUnits: 10,
+              WriteCapacityUnits: 10,
             },
           };
 
@@ -159,7 +151,7 @@ export const deleteItem = (orderId: string): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const params = {
-        TableName: "orders",
+        TableName: "Orders",
         Key: {
           orderId: orderId,
         },
@@ -171,6 +163,44 @@ export const deleteItem = (orderId: string): Promise<{}> => {
           reject(err);
         } else {
           resolve(data);
+        }
+      });
+    }
+  );
+};
+
+export const getValidItems = (): Promise<{}> => {
+  return new Promise(
+    (
+      resolve: (value?: {} | PromiseLike<{}>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      const query = {
+        TableName: "Orders",
+        // KeyConditionExpression: "#expired = :status",
+        FilterExpression: "#expired = :status",
+        ExpressionAttributeNames: {
+          "#expired": "expired",
+        },
+        ExpressionAttributeValues: {
+          ":status": false,
+        },
+      };
+
+      // var params = {
+      //   TableName: "users",
+      //   FilterExpression: "#user_status = :user_status_val",
+      //   ExpressionAttributeNames: {
+      //     "#user_status": "user_status",
+      //   },
+      //   ExpressionAttributeValues: { ":user_status_val": "somestatus" },
+      // };
+
+      docClient.scan(query, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data["Items"]);
         }
       });
     }

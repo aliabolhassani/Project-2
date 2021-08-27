@@ -1,4 +1,4 @@
-let AWSConfigs = {
+const awsConfigs = {
     S3bucket: "marketsmart2021",
     // endpoint: "http://localhost:8000",
     endpoint: "https://dynamodb.us-west-2.amazonaws.com",
@@ -7,4 +7,4 @@ let AWSConfigs = {
     secretAccessKey: process.env.SECRET_ACCESS_KEY
 };
 
-export { AWSConfigs };
+export { awsConfigs };
