@@ -35,10 +35,12 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
       fulfilledEntries: [],
       fulfilledTargets: [],
       expired: false,
+      timestamp: +new Date(),
     });
 
-    const info = await getItem(orderId);
-    console.log(colors.white(JSON.stringify(info, null, 2)));
+    // const info = await getItem(orderId);
+    // console.log(colors.white(JSON.stringify(info, null, 2)));
+    console.log(colors.white(orderId));
 
     return formatJSONResponse({
       message: event.body,
