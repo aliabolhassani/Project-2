@@ -2,13 +2,7 @@ import "source-map-support/register";
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
 import { formatJSONResponse } from "@libs/apiGateway";
 import { middyfy } from "@libs/lambda";
-import {
-  checkTable,
-  getItem,
-  updateItem,
-  deleteItem,
-  getValidItems,
-} from "../../libs/database";
+import { checkTable, updateItem, getValidItems } from "../../libs/database";
 const colors = require("colors/safe");
 
 import schema from "./schema";
@@ -42,11 +36,14 @@ const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const validItems = await getValidItems();
 
-  for (let validItem of <any>validItems) {
+  for (const validItem of <any>validItems) {
+    validItem.marketPrice = await getPrice("marketPrice", validItem.currency);
     let ww = await processSignals(validItem);
 
     console.log(">>>", colors.white(ww));
   }
+
+  setTimeout(() => process.exit(), 0);
 
   return formatJSONResponse({
     message: `Process completed.`,
@@ -75,18 +72,8 @@ const getKey = async (): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const stdin = process.stdin;
-
-      // stdin.setRawMode(true);
-
-      // resume stdin in the parent process (node app won't quit all by itself
-      // unless an error or process.exit() happens)
-      // stdin.resume();
       stdin.setEncoding("utf8");
       stdin.once("data", function (key) {
-        // write the key to stdout all normal like
-        // process.stdout.write(key);
-        // stdin.setRawMode(false);
-        // process.exit.bind(process, 0);
         resolve(key);
       });
     }
@@ -206,12 +193,14 @@ const handleEntries = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const price = await getPrice("handleEntries", item.currency);
+      const price = item.marketPrice;
 
-      if (!item.fulfilledEntries.length) {
+      if (!item.fulfilledEntries.length && !item.fulfilledTargets.length) {
         // Entry1
         if (price <= item.entry[0] * (1 + priceTolerance)) {
-          await buyOrder(item.currency, item.amount);
+          const amountToBuy = item.amount;
+          await buyOrder(item.currency, amountToBuy);
+
           item.fulfilledEntries.push(price);
 
           console.log(colors.magenta("Entry1 fulfilled."));
@@ -233,10 +222,10 @@ const handleEntries = async (item: any): Promise<{}> => {
       ) {
         // Entry2
         if (price <= item.entry[1] * (1 + priceTolerance)) {
-          await buyOrder(
-            item.currency,
-            (item.amount * martingaleSteps[1]) / martingaleSteps[0]
-          );
+          const amountToBuy =
+            (item.amount * martingaleSteps[1]) / martingaleSteps[0];
+          await buyOrder(item.currency, amountToBuy);
+
           item.fulfilledEntries.push(price);
 
           console.log(colors.magenta("Entry2 fulfilled."));
@@ -252,6 +241,18 @@ const handleEntries = async (item: any): Promise<{}> => {
             }
           );
 
+          const remainingAmount = item.remainingAmount + amountToBuy;
+          await updateItem(
+            item.orderId,
+            "set #remainingAmount = :x",
+            {
+              "#remainingAmount": "remainingAmount",
+            },
+            {
+              ":x": remainingAmount,
+            }
+          );
+
           await adjustTarget1(item);
           await adjustStoploss3(item);
         }
@@ -261,10 +262,10 @@ const handleEntries = async (item: any): Promise<{}> => {
       ) {
         // Entry3
         if (price <= item.entry[2] * (1 + priceTolerance)) {
-          await buyOrder(
-            item.currency,
-            (item.amount * martingaleSteps[2]) / martingaleSteps[0]
-          );
+          const amountToBuy =
+            (item.amount * martingaleSteps[2]) / martingaleSteps[0];
+          await buyOrder(item.currency, amountToBuy);
+
           item.fulfilledEntries.push(price);
 
           console.log(colors.magenta("Entry3 fulfilled."));
@@ -277,6 +278,18 @@ const handleEntries = async (item: any): Promise<{}> => {
             },
             {
               ":x": item.fulfilledEntries,
+            }
+          );
+
+          const remainingAmount = item.remainingAmount + amountToBuy;
+          await updateItem(
+            item.orderId,
+            "set #remainingAmount = :x",
+            {
+              "#remainingAmount": "remainingAmount",
+            },
+            {
+              ":x": remainingAmount,
             }
           );
 
@@ -296,15 +309,14 @@ const checkTargets = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const price = await getPrice("checkTargets", item.currency);
+      const price = item.marketPrice;
 
       if (item.fulfilledEntries.length && !item.fulfilledTargets.length) {
         // Target1
         if (price >= item.target[0] * (1 - priceTolerance)) {
-          await sellOrder(
-            item.currency,
-            (item.amount * martingaleSteps[0]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
-          );
+          const amountToSell =
+            (item.remainingAmount * martingaleSteps[2]) / 100;
+          await sellOrder(item.currency, amountToSell);
           item.fulfilledTargets.push(price);
 
           console.log(colors.magenta("Target1 fulfilled."));
@@ -320,6 +332,19 @@ const checkTargets = async (item: any): Promise<{}> => {
             }
           );
 
+          const remainingAmount = item.remainingAmount - amountToSell;
+
+          await updateItem(
+            item.orderId,
+            "set #remainingAmount = :x",
+            {
+              "#remainingAmount": "remainingAmount",
+            },
+            {
+              ":x": remainingAmount,
+            }
+          );
+
           await adjustStoploss1(item);
         }
       } else if (
@@ -327,11 +352,11 @@ const checkTargets = async (item: any): Promise<{}> => {
         item.fulfilledTargets.length === 1
       ) {
         // Target2
+
         if (price >= item.target[1] * (1 - priceTolerance)) {
-          await sellOrder(
-            item.currency,
-            (item.amount * martingaleSteps[1]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
-          );
+          const amountToSell =
+            (item.remainingAmount * martingaleSteps[1]) / 100;
+          await sellOrder(item.currency, amountToSell);
           item.fulfilledTargets.push(price);
 
           console.log(colors.magenta("Target2 fulfilled."));
@@ -347,6 +372,19 @@ const checkTargets = async (item: any): Promise<{}> => {
             }
           );
 
+          const remainingAmount = item.remainingAmount - amountToSell;
+
+          await updateItem(
+            item.orderId,
+            "set #remainingAmount = :x",
+            {
+              "#remainingAmount": "remainingAmount",
+            },
+            {
+              ":x": remainingAmount,
+            }
+          );
+
           await adjustStoploss2(item);
         }
       } else if (
@@ -354,11 +392,12 @@ const checkTargets = async (item: any): Promise<{}> => {
         item.fulfilledTargets.length === 2
       ) {
         // Target3
+
         if (price >= item.target[3] * (1 - priceTolerance)) {
-          await sellOrder(
-            item.currency,
-            (item.amount * martingaleSteps[2]) / martingaleSteps[0] /// <<<<============ use modifiedAmount
-          );
+          // const amountToSell = (item.remainingAmount * martingaleSteps[0]) / 100;    // Alternative way
+          const amountToSell = item.remainingAmount;
+
+          await sellOrder(item.currency, amountToSell);
           item.fulfilledTargets.push(price);
 
           console.log(colors.magenta("Target3 fulfilled."));
@@ -371,6 +410,19 @@ const checkTargets = async (item: any): Promise<{}> => {
             },
             {
               ":x": item.fulfilledTargets,
+            }
+          );
+
+          const remainingAmount = item.remainingAmount - amountToSell; // 0 amount
+
+          await updateItem(
+            item.orderId,
+            "set #remainingAmount = :x",
+            {
+              "#remainingAmount": "remainingAmount",
+            },
+            {
+              ":x": remainingAmount,
             }
           );
         }
@@ -389,7 +441,6 @@ const processBuy = async (item: any): Promise<{}> => {
     ) => {
       item = await handleEntries(item);
       item = await checkTargets(item);
-
       resolve(item);
     }
   );
@@ -401,7 +452,53 @@ const checkSignalValidity = async (item: any): Promise<string> => {
       resolve: (value?: string | PromiseLike<string>) => void,
       reject: (reason?: any) => void
     ) => {
-      resolve("valid");
+      if (
+        // If we miss the Target1 before entering the trade, the signal becomes invalid.
+        !item.fulfilledEntries.length &&
+        item.marketPrice >= item.target[0]
+      ) {
+        await updateItem(
+          item.orderId,
+          "set #expired = :x",
+          {
+            "#expired": "expired",
+          },
+          {
+            ":x": true,
+          }
+        );
+        resolve("invalid");
+      } else {
+        resolve("valid");
+      }
+    }
+  );
+};
+
+const checkStoploss = async (item: any): Promise<boolean> => {
+  return new Promise(
+    async (
+      resolve: (value?: boolean | PromiseLike<boolean>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      const price = item.marketPrice;
+
+      if (price <= item.stoploss * (1 + priceTolerance)) {
+        await updateItem(
+          item.orderId,
+          "set #expired = :x",
+          {
+            "#expired": "expired",
+          },
+          {
+            ":x": true,
+          }
+        );
+        await sellOrder(item.currency, item.remainingAmount);
+        resolve(true);
+      } else {
+        resolve(false);
+      }
     }
   );
 };
@@ -413,6 +510,10 @@ const processSignals = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       if (item.position === "buy") {
+        if (checkStoploss(item)) {
+          resolve(item);
+          return;
+        }
         checkSignalValidity(item).then((status: string) => {
           if (status === "valid") {
             processBuy(item).then(() => resolve(item));

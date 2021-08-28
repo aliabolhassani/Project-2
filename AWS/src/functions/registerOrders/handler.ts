@@ -36,6 +36,8 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
       fulfilledTargets: [],
       expired: false,
       timestamp: +new Date(),
+      // modifiedAmount: event.body["amount"],
+      remainingAmount: event.body["amount"],
     });
 
     // const info = await getItem(orderId);
