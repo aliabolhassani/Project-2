@@ -1,6 +1,7 @@
 import * as AWS from "aws-sdk";
 import { awsConfigs } from "../../awsConfigs";
 import { v4 as uuidv4 } from "uuid";
+const colors = require("colors/safe");
 
 AWS.config.update({
   endpoint: awsConfigs.endpoint,
@@ -203,6 +204,32 @@ export const getValidItems = (): Promise<{}> => {
           resolve(data["Items"]);
         }
       });
+    }
+  );
+};
+
+export const updateAttribute = async (
+  item: any,
+  attribute: string,
+  value: any
+): Promise<boolean> => {
+  return new Promise(
+    async (
+      resolve: (value?: boolean | PromiseLike<boolean>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      await updateItem(
+        item.orderId,
+        `set #${attribute} = :x`,
+        {
+          ["#" + attribute]: attribute,
+        },
+        {
+          ":x": value,
+        }
+      );
+
+      resolve(true);
     }
   );
 };
