@@ -2,5 +2,5 @@
   "headers": {
     "Content-Type": "application/json"
   },
-  "body": "{    \"strategy\": \"1\", \"amount\": 1000, \"origin\": \"mlTrader\",    \"currency\": \"LINK/USDT\",    \"entry\": [19.086, 18.233, 16.903],    \"leverage\": 1,    \"market\": \"binance\",    \"position\": \"buy\",    \"stoploss\": 15.536,    \"target\": [19.863, 20.709, 23.132]  }"
+  "body": "{    \"strategy\": \"1\", \"quantity\": 1000, \"origin\": \"mlTrader\",    \"currency\": \"LINK/USDT\",    \"entry\": [19.086, 18.233, 16.903],    \"leverage\": 1,    \"market\": \"binance\",    \"position\": \"buy\",    \"stoploss\": 15.536,    \"target\": [19.863, 20.709, 23.132]  }"
 }

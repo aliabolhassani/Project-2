@@ -23,7 +23,7 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
     // "position": "buy", // || "sell"
     // "stoploss": 15.536,
     // "target": [19.863, 20.709, 23.132]
-    // "amount": 1000,
+    // "quantity": 1000,
     // "fulfilledEntries": [],
     // "fulfilledTargets": [],
     // "expired": false,
@@ -36,8 +36,8 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
       fulfilledTargets: [],
       expired: false,
       timestamp: +new Date(),
-      // modifiedAmount: event.body["amount"],
-      remainingAmount: event.body["amount"],
+      remainingQuantity: event.body["quantity"],
+      transactions: [],
     });
 
     // const info = await getItem(orderId);
