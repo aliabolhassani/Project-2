@@ -128,11 +128,11 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       const target3 = item.target[2];
 
       const quantity1 = item.filter(
-        (element: any) => element.type === "quantity1"
-      );
+        (element: any) => element.type === "entry1"
+      ).quantity;
       const quantity2 = item.filter(
-        (element: any) => element.type === "quantity2"
-      );
+        (element: any) => element.type === "entry2"
+      ).quantity;
 
       const averagePrice =
         entry1 * quantity1 + (entry2 * quantity2) / (quantity1 + quantity2);
@@ -164,14 +164,14 @@ const adjustTarget2 = async (item: any): Promise<{}> => {
       const target3 = item.target[2];
 
       const quantity1 = item.filter(
-        (element: any) => element.type === "quantity1"
-      );
+        (element: any) => element.type === "entry1"
+      ).quantity;
       const quantity2 = item.filter(
-        (element: any) => element.type === "quantity2"
-      );
+        (element: any) => element.type === "entry2"
+      ).quantity;
       const quantity3 = item.filter(
-        (element: any) => element.type === "quantity3"
-      );
+        (element: any) => element.type === "entry3"
+      ).quantity;
 
       const averagePrice =
         entry1 * quantity1 +
