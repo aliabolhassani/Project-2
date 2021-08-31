@@ -12,15 +12,21 @@ import schema from './schema';
 import * as colors from 'colors/safe';
 import * as ccxt from 'ccxt';
 
-// const ccxt = require('ccxt');
-
 const binanceApiKey = process.env.BINANCE_API_KEY;
 const binanceApiSecret = process.env.BINANCE_API_SECRET;
+
+const exchange = new ccxt.binance({
+  apiKey: binanceApiKey,
+  secret: binanceApiSecret
+});
 
 const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
   const tableName = 'orders';
+
+  const bitcoinTicker = (await exchange.fetchTicker('BTC/USDT')).close;
+  console.log(colors.cyan(<any>bitcoinTicker));
 
   checkTable(tableName, (response: boolean) => {
     if (response === true) {
@@ -70,7 +76,7 @@ const log = async (item: any, data: any): Promise<boolean> => {
     ) => {
       data.timestamp = +new Date();
       const itemLog = (await (<any>getItem(item.orderId))).log || [];
-
+      console.log(colors.magenta(data));
       itemLog.push(data);
       await updateAttribute(item, 'log', itemLog);
       resolve(true);
