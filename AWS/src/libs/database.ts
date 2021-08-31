@@ -1,13 +1,13 @@
-import * as AWS from "aws-sdk";
-import { awsConfigs } from "../../awsConfigs";
-import { v4 as uuidv4 } from "uuid";
-const colors = require("colors/safe");
+import * as AWS from 'aws-sdk';
+import { awsConfigs } from '../../awsConfigs';
+import { v4 as uuidv4 } from 'uuid';
+import * as colors from 'colors/safe';
 
 AWS.config.update({
   endpoint: awsConfigs.endpoint,
   region: awsConfigs.region,
   accessKeyId: awsConfigs.accessKeyId,
-  secretAccessKey: awsConfigs.secretAccessKey,
+  secretAccessKey: awsConfigs.secretAccessKey
 } as any);
 
 const dynamodb = new AWS.DynamoDB();
@@ -15,7 +15,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 export const checkTable = (tableName: string, callback) => {
   const params = {
-    TableName: tableName,
+    TableName: tableName
   };
   dynamodb.describeTable(params, (err) => {
     callback(!!err);
@@ -29,20 +29,20 @@ export const getItem = (orderId: string): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const query = {
-        TableName: "Orders",
-        KeyConditionExpression: "#id = :orderId",
+        TableName: 'Orders',
+        KeyConditionExpression: '#id = :orderId',
         ExpressionAttributeNames: {
-          "#id": "orderId",
+          '#id': 'orderId'
         },
         ExpressionAttributeValues: {
-          ":orderId": orderId,
-        },
+          ':orderId': orderId
+        }
       };
       docClient.query(query, (err, data) => {
         if (err) {
           reject(err);
         } else {
-          resolve(data["Items"][0]);
+          resolve(data['Items'][0]);
         }
       });
     }
@@ -61,13 +61,13 @@ export const updateItem = (
       reject: (reason?: any) => void
     ) => {
       const params = {
-        TableName: "Orders",
+        TableName: 'Orders',
         Key: {
-          orderId: orderId,
+          orderId: orderId
         },
         UpdateExpression,
         ExpressionAttributeNames,
-        ExpressionAttributeValues,
+        ExpressionAttributeValues
       };
 
       docClient.update(params, (err, data) => {
@@ -90,11 +90,11 @@ export const putItem = (content: object): Promise<string> => {
     ) => {
       const orderId = uuidv4();
       const docParams = {
-        TableName: "Orders",
+        TableName: 'Orders',
         Item: {
           orderId: orderId,
-          ...content,
-        },
+          ...content
+        }
       };
 
       docClient.put(docParams, (err) => {
@@ -109,7 +109,7 @@ export const putItem = (content: object): Promise<string> => {
 };
 
 export const createTable = (): Promise<any> => {
-  const tableName = "Orders";
+  const tableName = 'Orders';
 
   return new Promise(
     (
@@ -120,14 +120,14 @@ export const createTable = (): Promise<any> => {
         if (response === true) {
           const params = {
             TableName: tableName,
-            KeySchema: [{ AttributeName: "orderId", KeyType: "HASH" }],
+            KeySchema: [{ AttributeName: 'orderId', KeyType: 'HASH' }],
             AttributeDefinitions: [
-              { AttributeName: "orderId", AttributeType: "S" },
+              { AttributeName: 'orderId', AttributeType: 'S' }
             ],
             ProvisionedThroughput: {
               ReadCapacityUnits: 10,
-              WriteCapacityUnits: 10,
-            },
+              WriteCapacityUnits: 10
+            }
           };
 
           dynamodb.createTable(params, (err, data: {}) => {
@@ -152,10 +152,10 @@ export const deleteItem = (orderId: string): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const params = {
-        TableName: "Orders",
+        TableName: 'Orders',
         Key: {
-          orderId: orderId,
-        },
+          orderId: orderId
+        }
       };
 
       docClient.delete(params, (err, data) => {
@@ -177,15 +177,15 @@ export const getValidItems = (): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const query = {
-        TableName: "Orders",
+        TableName: 'Orders',
         // KeyConditionExpression: "#expired = :status",
-        FilterExpression: "#expired = :status",
+        FilterExpression: '#expired = :status',
         ExpressionAttributeNames: {
-          "#expired": "expired",
+          '#expired': 'expired'
         },
         ExpressionAttributeValues: {
-          ":status": false,
-        },
+          ':status': false
+        }
       };
 
       // var params = {
@@ -201,7 +201,7 @@ export const getValidItems = (): Promise<{}> => {
         if (err) {
           reject(err);
         } else {
-          resolve(data["Items"]);
+          resolve(data['Items']);
         }
       });
     }
@@ -222,10 +222,10 @@ export const updateAttribute = async (
         item.orderId,
         `set #${attribute} = :x`,
         {
-          ["#" + attribute]: attribute,
+          ['#' + attribute]: attribute
         },
         {
-          ":x": value,
+          ':x': value
         }
       );
 

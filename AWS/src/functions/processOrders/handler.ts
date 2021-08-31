@@ -8,9 +8,14 @@ import {
   updateAttribute,
   getValidItems
 } from '../../libs/database';
-const colors = require('colors/safe');
-
 import schema from './schema';
+import * as colors from 'colors/safe';
+import * as ccxt from 'ccxt';
+
+// const ccxt = require('ccxt');
+
+const binanceApiKey = process.env.BINANCE_API_KEY;
+const binanceApiSecret = process.env.BINANCE_API_SECRET;
 
 const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -442,7 +447,6 @@ const checkTargets = async (item: any): Promise<{}> => {
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
-
           await adjustStoploss1(item);
         }
       } else if (
@@ -482,7 +486,6 @@ const checkTargets = async (item: any): Promise<{}> => {
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
-
           await adjustStoploss2(item);
         }
       } else if (
@@ -594,13 +597,12 @@ const checkStoploss = async (item: any): Promise<boolean> => {
   );
 };
 
-const processSignals = async (item: any): Promise<{}> => {
+const processSignals = async (item: any): Promise<any> => {
   return new Promise(
     async (
-      resolve: (value?: {} | PromiseLike<{}>) => void,
+      resolve: (value?: any | PromiseLike<any>) => void,
       reject: (reason?: any) => void
     ) => {
-      log(item, { event: 'Started processing.' });
       if (item.position === 'buy') {
         if (checkStoploss(item)) {
           resolve(item);

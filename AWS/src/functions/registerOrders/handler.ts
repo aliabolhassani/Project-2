@@ -4,7 +4,7 @@ import { formatJSONResponse } from '@libs/apiGateway';
 import { middyfy } from '@libs/lambda';
 import schema from './schema';
 import { createTable, putItem } from '../../libs/database';
-const colors = require('colors/safe');
+import * as colors from 'colors/safe';
 
 const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
   async (event) => {
