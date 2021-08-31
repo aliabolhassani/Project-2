@@ -25,9 +25,6 @@ const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 ) => {
   const tableName = 'orders';
 
-  const bitcoinTicker = (await exchange.fetchTicker('BTC/USDT')).close;
-  console.log(colors.cyan(<any>bitcoinTicker));
-
   checkTable(tableName, (response: boolean) => {
     if (response === true) {
       return formatJSONResponse({
@@ -84,25 +81,25 @@ const log = async (item: any, data: any): Promise<boolean> => {
   );
 };
 
-const buyOrder = async (currency: string, amount: number): Promise<{}> => {
+const buyMarket = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = Math.random();
+      const id = exchange.createOrder(currency, 'market', 'buy', amount);
       resolve(id);
     }
   );
 };
 
-const sellOrder = async (currency: string, amount: number): Promise<{}> => {
+const sellMarket = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = Math.random();
+      const id = exchange.createOrder(currency, 'market', 'sell', amount);
       resolve(id);
     }
   );
@@ -114,9 +111,8 @@ const getPrice = async (currency: any): Promise<number> => {
       resolve: (value?: number | PromiseLike<number>) => void,
       reject: (reason?: any) => void
     ) => {
-      const price = 17;
-      // console.log(colors.white(text));
-      // const price = parseInt(<string>await getKey(), 10);
+      const price = <any>(await exchange.fetchTicker(currency)).close;
+      // resolve(0.001);
       resolve(price);
     }
   );
@@ -308,7 +304,7 @@ const handleEntries = async (item: any): Promise<{}> => {
           const quantityToBuy = item.quantity;
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
@@ -341,7 +337,7 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[1]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
@@ -379,7 +375,7 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[2]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
@@ -429,7 +425,7 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[2]) / 100;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
@@ -466,7 +462,7 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[1]) / 100;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
@@ -503,7 +499,7 @@ const checkTargets = async (item: any): Promise<{}> => {
           const quantityToSell = item.remainingQuantity;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
@@ -582,7 +578,7 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         await updateAttribute(item, 'expired', true);
 
         const amount = item.remainingQuantity / price;
-        await sellOrder(item.currency, amount);
+        await sellMarket(item.currency, amount);
 
         item.transactions.push({
           type: 'stoploss',
