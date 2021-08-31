@@ -1,27 +1,35 @@
-import "source-map-support/register";
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
-import { middyfy } from "@libs/lambda";
+import 'source-map-support/register';
+import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/apiGateway';
+import { formatJSONResponse } from '@libs/apiGateway';
+import { middyfy } from '@libs/lambda';
 import {
   checkTable,
   getItem,
   updateAttribute,
-  getValidItems,
-} from "../../libs/database";
-const colors = require("colors/safe");
+  getValidItems
+} from '../../libs/database';
+import schema from './schema';
+import * as colors from 'colors/safe';
+import * as ccxt from 'ccxt';
 
-import schema from "./schema";
+const binanceApiKey = process.env.BINANCE_API_KEY;
+const binanceApiSecret = process.env.BINANCE_API_SECRET;
+
+const exchange = new ccxt.binance({
+  apiKey: binanceApiKey,
+  secret: binanceApiSecret
+});
 
 const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  const tableName = "orders";
+  const tableName = 'orders';
 
   checkTable(tableName, (response: boolean) => {
     if (response === true) {
       return formatJSONResponse({
         message: `Table is not yet initialized.`,
-        event,
+        event
       });
     }
   });
@@ -29,14 +37,14 @@ const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const validItems = await getValidItems();
 
   for (const validItem of <any>validItems) {
-    validItem.marketPrice = await getPrice("marketPrice", validItem.currency);
+    validItem.marketPrice = await getPrice(validItem.currency);
     const val = await processSignals(validItem);
 
-    console.log(">>>", colors.white(val));
+    console.log('>>>', colors.white(val));
   }
   return formatJSONResponse({
     message: `Process completed.`,
-    event,
+    event
   });
 };
 
@@ -49,8 +57,8 @@ const getKey = async (): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       const stdin = process.stdin;
-      stdin.setEncoding("utf8");
-      stdin.once("data", function (key) {
+      stdin.setEncoding('utf8');
+      stdin.once('data', function (key) {
         resolve(key);
       });
     }
@@ -65,47 +73,46 @@ const log = async (item: any, data: any): Promise<boolean> => {
     ) => {
       data.timestamp = +new Date();
       const itemLog = (await (<any>getItem(item.orderId))).log || [];
-
+      console.log(colors.magenta(data));
       itemLog.push(data);
-      await updateAttribute(item, "log", itemLog);
+      await updateAttribute(item, 'log', itemLog);
       resolve(true);
     }
   );
 };
 
-const buyOrder = async (currency: string, amount: number): Promise<{}> => {
+const buyMarket = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = Math.random();
+      const id = exchange.createOrder(currency, 'market', 'buy', amount);
       resolve(id);
     }
   );
 };
 
-const sellOrder = async (currency: string, amount: number): Promise<{}> => {
+const sellMarket = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = Math.random();
+      const id = exchange.createOrder(currency, 'market', 'sell', amount);
       resolve(id);
     }
   );
 };
 
-const getPrice = async (text, currency: any): Promise<number> => {
+const getPrice = async (currency: any): Promise<number> => {
   return new Promise(
     async (
       resolve: (value?: number | PromiseLike<number>) => void,
       reject: (reason?: any) => void
     ) => {
-      const price = 17;
-      // console.log(colors.white(text));
-      // const price = parseInt(<string>await getKey(), 10);
+      const price = <any>(await exchange.fetchTicker(currency)).close;
+      // resolve(0.001);
       resolve(price);
     }
   );
@@ -128,10 +135,10 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       const target3 = item.target[2];
 
       const quantity1 = item.filter(
-        (element: any) => element.type === "entry1"
+        (element: any) => element.type === 'entry1'
       ).quantity;
       const quantity2 = item.filter(
-        (element: any) => element.type === "entry2"
+        (element: any) => element.type === 'entry2'
       ).quantity;
 
       const averagePrice =
@@ -142,7 +149,11 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       const newTarget3 = averagePrice - entry1 + target3;
 
       item.target = [newTarget1, newTarget2, newTarget3];
-      await updateAttribute(item, "target", item.target);
+      await updateAttribute(item, 'target', item.target);
+
+      log(item, {
+        event: `Target adjusted (1); new targets: ${item.target}.`
+      });
 
       resolve(item);
     }
@@ -164,13 +175,13 @@ const adjustTarget2 = async (item: any): Promise<{}> => {
       const target3 = item.target[2];
 
       const quantity1 = item.filter(
-        (element: any) => element.type === "entry1"
+        (element: any) => element.type === 'entry1'
       ).quantity;
       const quantity2 = item.filter(
-        (element: any) => element.type === "entry2"
+        (element: any) => element.type === 'entry2'
       ).quantity;
       const quantity3 = item.filter(
-        (element: any) => element.type === "entry3"
+        (element: any) => element.type === 'entry3'
       ).quantity;
 
       const averagePrice =
@@ -183,7 +194,11 @@ const adjustTarget2 = async (item: any): Promise<{}> => {
       const newTarget3 = averagePrice - entry1 + target3;
 
       item.target = [newTarget1, newTarget2, newTarget3];
-      await updateAttribute(item, "target", item.target);
+      await updateAttribute(item, 'target', item.target);
+
+      log(item, {
+        event: `Target adjusted (2); new targets: ${item.target}.`
+      });
 
       resolve(item);
     }
@@ -197,7 +212,12 @@ const adjustStoploss1 = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       item.stoploss = item.entry[0];
-      await updateAttribute(item, "stoploss", item.stoploss);
+      await updateAttribute(item, 'stoploss', item.stoploss);
+
+      log(item, {
+        event: `Stoploss adjusted (1); new stoploss: ${item.stoploss}.`
+      });
+
       resolve(item);
     }
   );
@@ -210,7 +230,12 @@ const adjustStoploss2 = async (item: any): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       item.stoploss = item.target[0];
-      await updateAttribute(item, "stoploss", item.stoploss);
+      await updateAttribute(item, 'stoploss', item.stoploss);
+
+      log(item, {
+        event: `Stoploss adjusted (2); new stoploss: ${item.stoploss}.`
+      });
+
       resolve(item);
     }
   );
@@ -222,13 +247,18 @@ const adjustStoploss3 = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const entry1 = item.filter((element: any) => element.type === "entry1");
-      const entry2 = item.filter((element: any) => element.type === "entry2");
+      const entry1 = item.filter((element: any) => element.type === 'entry1');
+      const entry2 = item.filter((element: any) => element.type === 'entry2');
       item.stoploss =
         (entry1.price * entry1.quantity + entry2.price * entry2.quantity) /
         (entry1.quantity + entry2.quantity);
 
-      await updateAttribute(item, "stoploss", item.stoploss);
+      await updateAttribute(item, 'stoploss', item.stoploss);
+
+      log(item, {
+        event: `Stoploss adjusted (3); new stoploss: ${item.stoploss}.`
+      });
+
       resolve(item);
     }
   );
@@ -240,16 +270,21 @@ const adjustStoploss4 = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const entry1 = item.filter((element: any) => element.type === "entry1");
-      const entry2 = item.filter((element: any) => element.type === "entry2");
-      const entry3 = item.filter((element: any) => element.type === "entry3");
+      const entry1 = item.filter((element: any) => element.type === 'entry1');
+      const entry2 = item.filter((element: any) => element.type === 'entry2');
+      const entry3 = item.filter((element: any) => element.type === 'entry3');
       item.stoploss =
         (entry1.price * entry1.quantity +
           entry2.price * entry2.quantity +
           entry3.price * entry3.quantity) /
         (entry1.quantity + entry2.quantity + entry3.quantity);
 
-      await updateAttribute(item, "stoploss", item.stoploss);
+      await updateAttribute(item, 'stoploss', item.stoploss);
+
+      log(item, {
+        event: `Stoploss adjusted (4); new stoploss: ${item.stoploss}.`
+      });
+
       resolve(item);
     }
   );
@@ -269,24 +304,28 @@ const handleEntries = async (item: any): Promise<{}> => {
           const quantityToBuy = item.quantity;
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
-          console.log(colors.magenta("Entry1 fulfilled."));
+          // console.log(colors.magenta('Entry1 fulfilled.'));
 
           await updateAttribute(
             item,
-            "fulfilledEntries",
+            'fulfilledEntries',
             item.fulfilledEntries
           );
 
-          item.transactions.push({
-            type: "entry1",
-            quantity: quantityToBuy,
-            price,
+          log(item, {
+            event: `Entry1 hit; quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
           });
-          await updateAttribute(item, "transactions", item.transactions);
+
+          item.transactions.push({
+            type: 'entry1',
+            quantity: quantityToBuy,
+            price
+          });
+          await updateAttribute(item, 'transactions', item.transactions);
         }
       } else if (
         item.fulfilledEntries.length === 1 &&
@@ -298,26 +337,30 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[1]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
-          console.log(colors.magenta("Entry2 fulfilled."));
+          // console.log(colors.magenta('Entry2 fulfilled.'));
           await updateAttribute(
             item,
-            "fulfilledEntries",
+            'fulfilledEntries',
             item.fulfilledEntries
           );
 
           const remainingQuantity = item.remainingQuantity + quantityToBuy;
-          await updateAttribute(item, "remainingQuantity", remainingQuantity);
+          await updateAttribute(item, 'remainingQuantity', remainingQuantity);
+
+          log(item, {
+            event: `Entry2 hit; remainingQuantity: ${remainingQuantity}, quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
+          });
 
           item.transactions.push({
-            type: "entry2",
+            type: 'entry2',
             quantity: quantityToBuy,
-            price,
+            price
           });
-          await updateAttribute(item, "transactions", item.transactions);
+          await updateAttribute(item, 'transactions', item.transactions);
 
           await adjustTarget1(item);
           await adjustStoploss3(item);
@@ -332,26 +375,30 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[2]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyOrder(item.currency, amount);
+          await buyMarket(item.currency, amount);
 
           item.fulfilledEntries.push(price);
 
-          console.log(colors.magenta("Entry3 fulfilled."));
+          // console.log(colors.magenta('Entry3 fulfilled.'));
           await updateAttribute(
             item,
-            "fulfilledEntries",
+            'fulfilledEntries',
             item.fulfilledEntries
           );
 
           const remainingQuantity = item.remainingQuantity + quantityToBuy;
-          await updateAttribute(item, "remainingQuantity", remainingQuantity);
+          await updateAttribute(item, 'remainingQuantity', remainingQuantity);
+
+          log(item, {
+            event: `Entry3 hit; remainingQuantity: ${remainingQuantity}, quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
+          });
 
           item.transactions.push({
-            type: "entry3",
+            type: 'entry3',
             quantity: quantityToBuy,
-            price,
+            price
           });
-          await updateAttribute(item, "transactions", item.transactions);
+          await updateAttribute(item, 'transactions', item.transactions);
 
           await adjustTarget2(item);
           await adjustStoploss4(item);
@@ -378,28 +425,30 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[2]) / 100;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
-          console.log(colors.magenta("Target1 fulfilled."));
           await updateAttribute(
             item,
-            "fulfilledTargets",
+            'fulfilledTargets',
             item.fulfilledTargets
           );
 
           const remainingQuantity = item.remainingQuantity - quantityToSell;
-          await updateAttribute(item, "remainingQuantity", remainingQuantity);
+          await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          item.transactions.push({
-            type: "target1",
-            quantity: quantityToSell,
-            price,
+          log(item, {
+            event: `Target1 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
-          await updateAttribute(item, "transactions", item.transactions);
+          item.transactions.push({
+            type: 'target1',
+            quantity: quantityToSell,
+            price
+          });
 
+          await updateAttribute(item, 'transactions', item.transactions);
           await adjustStoploss1(item);
         }
       } else if (
@@ -413,29 +462,32 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[1]) / 100;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
-          console.log(colors.magenta("Target2 fulfilled."));
+          // console.log(colors.magenta("Target2 fulfilled."));
 
           await updateAttribute(
             item,
-            "fulfilledTargets",
+            'fulfilledTargets',
             item.fulfilledTargets
           );
 
           const remainingQuantity = item.remainingQuantity - quantityToSell;
-          await updateAttribute(item, "remainingQuantity", remainingQuantity);
+          await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          item.transactions.push({
-            type: "target2",
-            quantity: quantityToSell,
-            price,
+          log(item, {
+            event: `Target2 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
-          await updateAttribute(item, "transactions", item.transactions);
+          item.transactions.push({
+            type: 'target2',
+            quantity: quantityToSell,
+            price
+          });
 
+          await updateAttribute(item, 'transactions', item.transactions);
           await adjustStoploss2(item);
         }
       } else if (
@@ -443,35 +495,36 @@ const checkTargets = async (item: any): Promise<{}> => {
         item.fulfilledTargets.length === 2
       ) {
         // Target3
-
         if (price >= item.target[3] * (1 - priceTolerance)) {
-          // const quantityToSell = (item.remainingQuantity * martingaleSteps[0]) / 100;    // Alternative way
           const quantityToSell = item.remainingQuantity;
 
           const amount = quantityToSell / price;
-          await sellOrder(item.currency, amount);
+          await sellMarket(item.currency, amount);
 
           item.fulfilledTargets.push(price);
 
-          console.log(colors.magenta("Target3 fulfilled."));
+          // console.log(colors.magenta("Target3 fulfilled."));
 
           await updateAttribute(
             item,
-            "fulfilledTargets",
+            'fulfilledTargets',
             item.fulfilledTargets
           );
 
           const remainingQuantity = item.remainingQuantity - quantityToSell; // 0 quantity
 
-          item.transactions.push({
-            type: "target3",
-            quantity: quantityToSell,
-            price,
+          log(item, {
+            event: `Target3 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
-          await updateAttribute(item, "transactions", item.transactions);
+          item.transactions.push({
+            type: 'target3',
+            quantity: quantityToSell,
+            price
+          });
 
-          await updateAttribute(item, "remainingQuantity", remainingQuantity);
+          await updateAttribute(item, 'transactions', item.transactions);
+          await updateAttribute(item, 'remainingQuantity', remainingQuantity);
         }
       }
 
@@ -504,10 +557,10 @@ const checkSignalValidity = async (item: any): Promise<string> => {
         !item.fulfilledEntries.length &&
         item.marketPrice >= item.target[0]
       ) {
-        await updateAttribute(item, "expired", true);
-        resolve("invalid");
+        await updateAttribute(item, 'expired', true);
+        resolve('invalid');
       } else {
-        resolve("valid");
+        resolve('valid');
       }
     }
   );
@@ -522,17 +575,21 @@ const checkStoploss = async (item: any): Promise<boolean> => {
       const price = item.marketPrice;
 
       if (price <= item.stoploss * (1 + priceTolerance)) {
-        await updateAttribute(item, "expired", true);
+        await updateAttribute(item, 'expired', true);
 
         const amount = item.remainingQuantity / price;
-        await sellOrder(item.currency, amount);
+        await sellMarket(item.currency, amount);
 
         item.transactions.push({
-          type: "stoploss",
+          type: 'stoploss',
           quantity: item.remainingQuantity,
-          price,
+          price
         });
-        await updateAttribute(item, "transactions", item.transactions);
+        await updateAttribute(item, 'transactions', item.transactions);
+
+        log(item, {
+          event: `Stoploss hit; remainingQuantity: ${item.remainingQuantity}, amount: ${amount}.`
+        });
 
         resolve(true);
       } else {
@@ -542,20 +599,19 @@ const checkStoploss = async (item: any): Promise<boolean> => {
   );
 };
 
-const processSignals = async (item: any): Promise<{}> => {
+const processSignals = async (item: any): Promise<any> => {
   return new Promise(
     async (
-      resolve: (value?: {} | PromiseLike<{}>) => void,
+      resolve: (value?: any | PromiseLike<any>) => void,
       reject: (reason?: any) => void
     ) => {
-      log(item, { event: "Started processing." });
-      if (item.position === "buy") {
+      if (item.position === 'buy') {
         if (checkStoploss(item)) {
           resolve(item);
           return;
         }
         checkSignalValidity(item).then((status: string) => {
-          if (status === "valid") {
+          if (status === 'valid') {
             processBuy(item).then(() => resolve(item));
           }
         });

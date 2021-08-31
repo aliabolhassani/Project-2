@@ -1,10 +1,10 @@
-import "source-map-support/register";
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
-import { middyfy } from "@libs/lambda";
-import schema from "./schema";
-import { getItem, createTable, putItem } from "../../libs/database";
-const colors = require("colors/safe");
+import 'source-map-support/register';
+import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/apiGateway';
+import { formatJSONResponse } from '@libs/apiGateway';
+import { middyfy } from '@libs/lambda';
+import schema from './schema';
+import { createTable, putItem } from '../../libs/database';
+import * as colors from 'colors/safe';
 
 const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
   async (event) => {
@@ -36,8 +36,8 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
       fulfilledTargets: [],
       expired: false,
       timestamp: +new Date(),
-      remainingQuantity: event.body["quantity"],
-      transactions: [],
+      remainingQuantity: event.body['quantity'],
+      transactions: []
     });
 
     // const info = await getItem(orderId);
@@ -45,7 +45,7 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
     console.log(colors.white(orderId));
 
     return formatJSONResponse({
-      message: event.body,
+      message: event.body
     });
   };
 
