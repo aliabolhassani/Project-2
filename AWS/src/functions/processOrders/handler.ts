@@ -16,6 +16,7 @@ const binanceApiKey = process.env.BINANCE_API_KEY;
 const binanceApiSecret = process.env.BINANCE_API_SECRET;
 
 const exchange = new ccxt.binance({
+  // verbose: true,
   apiKey: binanceApiKey,
   secret: binanceApiSecret
 });
@@ -81,26 +82,30 @@ const log = async (item: any, data: any): Promise<boolean> => {
   );
 };
 
-const buyMarket = async (currency: string, amount: number): Promise<{}> => {
+const marketBuy = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = exchange.createOrder(currency, 'market', 'buy', amount);
-      resolve(id);
+      exchange
+        .createMarketOrder(currency, 'buy', amount)
+        .then((id) => resolve(id))
+        .catch(() => resolve(null));
     }
   );
 };
 
-const sellMarket = async (currency: string, amount: number): Promise<{}> => {
+const marketSell = async (currency: string, amount: number): Promise<{}> => {
   return new Promise(
     async (
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const id = exchange.createOrder(currency, 'market', 'sell', amount);
-      resolve(id);
+      exchange
+        .createMarketOrder(currency, 'sell', amount)
+        .then((id) => resolve(id))
+        .catch(() => resolve(null));
     }
   );
 };
@@ -300,15 +305,20 @@ const handleEntries = async (item: any): Promise<{}> => {
 
       if (!item.fulfilledEntries.length && !item.fulfilledTargets.length) {
         // Entry1
+
         if (price <= item.entry[0] * (1 + priceTolerance)) {
           const quantityToBuy = item.quantity;
 
           const amount = quantityToBuy / price;
-          await buyMarket(item.currency, amount);
+
+          if (!(await marketBuy(item.currency, amount))) {
+            log(item, {
+              event: `Error buying on Entry1 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
+            });
+            return;
+          }
 
           item.fulfilledEntries.push(price);
-
-          // console.log(colors.magenta('Entry1 fulfilled.'));
 
           await updateAttribute(
             item,
@@ -325,6 +335,7 @@ const handleEntries = async (item: any): Promise<{}> => {
             quantity: quantityToBuy,
             price
           });
+
           await updateAttribute(item, 'transactions', item.transactions);
         }
       } else if (
@@ -337,7 +348,13 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[1]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyMarket(item.currency, amount);
+
+          if (!(await marketBuy(item.currency, amount))) {
+            log(item, {
+              event: `Error buying on Entry2 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
+            });
+            return;
+          }
 
           item.fulfilledEntries.push(price);
 
@@ -375,7 +392,13 @@ const handleEntries = async (item: any): Promise<{}> => {
             (item.quantity * martingaleSteps[2]) / martingaleSteps[0];
 
           const amount = quantityToBuy / price;
-          await buyMarket(item.currency, amount);
+
+          if (!(await marketBuy(item.currency, amount))) {
+            log(item, {
+              event: `Error buying on Entry3 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
+            });
+            return;
+          }
 
           item.fulfilledEntries.push(price);
 
@@ -425,7 +448,14 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[2]) / 100;
 
           const amount = quantityToSell / price;
-          await sellMarket(item.currency, amount);
+          // await marketSell(item.currency, amount);
+
+          if (!(await marketSell(item.currency, amount))) {
+            log(item, {
+              event: `Error selling on Target1 at price: ${price}, quantityToSell: ${quantityToSell}.`
+            });
+            return;
+          }
 
           item.fulfilledTargets.push(price);
 
@@ -462,7 +492,14 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[1]) / 100;
 
           const amount = quantityToSell / price;
-          await sellMarket(item.currency, amount);
+          // await marketSell(item.currency, amount);
+
+          if (!(await marketSell(item.currency, amount))) {
+            log(item, {
+              event: `Error selling on Target2 at price: ${price}, quantityToSell: ${quantityToSell}.`
+            });
+            return;
+          }
 
           item.fulfilledTargets.push(price);
 
@@ -499,7 +536,14 @@ const checkTargets = async (item: any): Promise<{}> => {
           const quantityToSell = item.remainingQuantity;
 
           const amount = quantityToSell / price;
-          await sellMarket(item.currency, amount);
+          // await marketSell(item.currency, amount);
+
+          if (!(await marketSell(item.currency, amount))) {
+            log(item, {
+              event: `Error selling on Target3 at price: ${price}, quantityToSell: ${quantityToSell}.`
+            });
+            return;
+          }
 
           item.fulfilledTargets.push(price);
 
@@ -578,7 +622,14 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         await updateAttribute(item, 'expired', true);
 
         const amount = item.remainingQuantity / price;
-        await sellMarket(item.currency, amount);
+        // await marketSell(item.currency, amount);
+
+        if (!(await marketSell(item.currency, amount))) {
+          log(item, {
+            event: `Error selling on Stoploss hit; remainingQuantity: ${item.remainingQuantity}, amount: ${amount}.`
+          });
+          return;
+        }
 
         item.transactions.push({
           type: 'stoploss',
@@ -606,7 +657,7 @@ const processSignals = async (item: any): Promise<any> => {
       reject: (reason?: any) => void
     ) => {
       if (item.position === 'buy') {
-        if (checkStoploss(item)) {
+        if (await checkStoploss(item)) {
           resolve(item);
           return;
         }

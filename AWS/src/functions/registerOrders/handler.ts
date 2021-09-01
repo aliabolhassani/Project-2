@@ -14,6 +14,8 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
 
     await createTable();
 
+    // "body": "{    \"strategy\": \"1\", \"quantity\": 10, \"origin\": \"mlTrader\",    \"currency\": \"LINK/USDT\",    \"entry\": [19.086, 18.233, 16.903],    \"leverage\": 1,    \"market\": \"binance\",    \"position\": \"buy\",    \"stoploss\": 15.536,    \"target\": [19.863, 20.709, 23.132]  }"
+
     // {
     // "origin": "mlTrader", // || "tradingView" || "bot"
     // "currency": "LINK/USDT",
@@ -30,13 +32,15 @@ const registerOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
     // "strategy": 1,
     // }
 
+    event.body = event.body || { ...event };
+
     const orderId = await putItem({
       ...(<object>event.body),
       fulfilledEntries: [],
       fulfilledTargets: [],
       expired: false,
       timestamp: +new Date(),
-      remainingQuantity: event.body['quantity'],
+      remainingQuantity: (<any>event.body).quantity,
       transactions: []
     });
 
