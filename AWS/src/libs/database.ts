@@ -178,7 +178,6 @@ export const getValidItems = (): Promise<{}> => {
     ) => {
       const query = {
         TableName: 'Orders',
-        // KeyConditionExpression: "#expired = :status",
         FilterExpression: '#expired = :status',
         ExpressionAttributeNames: {
           '#expired': 'expired'
@@ -187,15 +186,6 @@ export const getValidItems = (): Promise<{}> => {
           ':status': false
         }
       };
-
-      // var params = {
-      //   TableName: "users",
-      //   FilterExpression: "#user_status = :user_status_val",
-      //   ExpressionAttributeNames: {
-      //     "#user_status": "user_status",
-      //   },
-      //   ExpressionAttributeValues: { ":user_status_val": "somestatus" },
-      // };
 
       docClient.scan(query, (err, data) => {
         if (err) {

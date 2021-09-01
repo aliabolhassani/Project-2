@@ -90,8 +90,14 @@ const marketBuy = async (currency: string, amount: number): Promise<{}> => {
     ) => {
       exchange
         .createMarketOrder(currency, 'buy', <any>amount.toFixed(8))
-        .then((id) => resolve(id))
-        .catch(() => resolve(null));
+        .then((id) => {
+          console.log(colors.yellow(<any>id));
+          resolve(id);
+        })
+        .catch((e) => {
+          console.log(colors.red(e));
+          resolve(null);
+        });
     }
   );
 };
@@ -104,8 +110,14 @@ const marketSell = async (currency: string, amount: number): Promise<{}> => {
     ) => {
       exchange
         .createMarketOrder(currency, 'sell', <any>amount.toFixed(8))
-        .then((id) => resolve(id))
-        .catch(() => resolve(null));
+        .then((id) => {
+          console.log(colors.yellow(<any>id));
+          resolve(id);
+        })
+        .catch((e) => {
+          console.log(colors.red(e));
+          resolve(null);
+        });
     }
   );
 };
@@ -310,10 +322,11 @@ const handleEntries = async (item: any): Promise<{}> => {
 
           const amount = quantityToBuy / price;
 
-          if (!(await marketBuy(item.currency, amount))) {
+          if ((await marketBuy(item.currency, amount)) === null) {
             log(item, {
               event: `Error buying on Entry1 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
+            resolve(item);
             return;
           }
 
@@ -348,10 +361,11 @@ const handleEntries = async (item: any): Promise<{}> => {
 
           const amount = quantityToBuy / price;
 
-          if (!(await marketBuy(item.currency, amount))) {
+          if ((await marketBuy(item.currency, amount)) === null) {
             log(item, {
               event: `Error buying on Entry2 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
+            resolve(item);
             return;
           }
 
@@ -391,10 +405,11 @@ const handleEntries = async (item: any): Promise<{}> => {
 
           const amount = quantityToBuy / price;
 
-          if (!(await marketBuy(item.currency, amount))) {
+          if ((await marketBuy(item.currency, amount)) === null) {
             log(item, {
               event: `Error buying on Entry3 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
+            resolve(item);
             return;
           }
 
@@ -446,10 +461,11 @@ const checkTargets = async (item: any): Promise<{}> => {
 
           const amount = quantityToSell / price;
 
-          if (!(await marketSell(item.currency, amount))) {
+          if ((await marketSell(item.currency, amount)) === null) {
             log(item, {
               event: `Error selling on Target1 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
+            resolve(item);
             return;
           }
 
@@ -489,10 +505,11 @@ const checkTargets = async (item: any): Promise<{}> => {
 
           const amount = quantityToSell / price;
 
-          if (!(await marketSell(item.currency, amount))) {
+          if ((await marketSell(item.currency, amount)) === null) {
             log(item, {
               event: `Error selling on Target2 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
+            resolve(item);
             return;
           }
 
@@ -530,10 +547,11 @@ const checkTargets = async (item: any): Promise<{}> => {
 
           const amount = quantityToSell / price;
 
-          if (!(await marketSell(item.currency, amount))) {
+          if ((await marketSell(item.currency, amount)) === null) {
             log(item, {
               event: `Error selling on Target3 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
+            resolve(item);
             return;
           }
 
@@ -613,10 +631,11 @@ const checkStoploss = async (item: any): Promise<boolean> => {
 
         const amount = item.remainingQuantity / price;
 
-        if (!(await marketSell(item.currency, amount))) {
+        if ((await marketSell(item.currency, amount)) === null) {
           log(item, {
             event: `Error selling on Stoploss hit; remainingQuantity: ${item.remainingQuantity}, amount: ${amount}.`
           });
+          resolve(true);
           return;
         }
 
