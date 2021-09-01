@@ -89,7 +89,7 @@ const marketBuy = async (currency: string, amount: number): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       exchange
-        .createMarketOrder(currency, 'buy', amount)
+        .createMarketOrder(currency, 'buy', <any>amount.toFixed(8))
         .then((id) => resolve(id))
         .catch(() => resolve(null));
     }
@@ -103,7 +103,7 @@ const marketSell = async (currency: string, amount: number): Promise<{}> => {
       reject: (reason?: any) => void
     ) => {
       exchange
-        .createMarketOrder(currency, 'sell', amount)
+        .createMarketOrder(currency, 'sell', <any>amount.toFixed(8))
         .then((id) => resolve(id))
         .catch(() => resolve(null));
     }
@@ -117,7 +117,6 @@ const getPrice = async (currency: any): Promise<number> => {
       reject: (reason?: any) => void
     ) => {
       const price = <any>(await exchange.fetchTicker(currency)).close;
-      // resolve(0.001);
       resolve(price);
     }
   );
@@ -358,7 +357,6 @@ const handleEntries = async (item: any): Promise<{}> => {
 
           item.fulfilledEntries.push(price);
 
-          // console.log(colors.magenta('Entry2 fulfilled.'));
           await updateAttribute(
             item,
             'fulfilledEntries',
@@ -402,7 +400,6 @@ const handleEntries = async (item: any): Promise<{}> => {
 
           item.fulfilledEntries.push(price);
 
-          // console.log(colors.magenta('Entry3 fulfilled.'));
           await updateAttribute(
             item,
             'fulfilledEntries',
@@ -448,7 +445,6 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[2]) / 100;
 
           const amount = quantityToSell / price;
-          // await marketSell(item.currency, amount);
 
           if (!(await marketSell(item.currency, amount))) {
             log(item, {
@@ -492,7 +488,6 @@ const checkTargets = async (item: any): Promise<{}> => {
             (item.remainingQuantity * martingaleSteps[1]) / 100;
 
           const amount = quantityToSell / price;
-          // await marketSell(item.currency, amount);
 
           if (!(await marketSell(item.currency, amount))) {
             log(item, {
@@ -502,8 +497,6 @@ const checkTargets = async (item: any): Promise<{}> => {
           }
 
           item.fulfilledTargets.push(price);
-
-          // console.log(colors.magenta("Target2 fulfilled."));
 
           await updateAttribute(
             item,
@@ -536,7 +529,6 @@ const checkTargets = async (item: any): Promise<{}> => {
           const quantityToSell = item.remainingQuantity;
 
           const amount = quantityToSell / price;
-          // await marketSell(item.currency, amount);
 
           if (!(await marketSell(item.currency, amount))) {
             log(item, {
@@ -546,8 +538,6 @@ const checkTargets = async (item: any): Promise<{}> => {
           }
 
           item.fulfilledTargets.push(price);
-
-          // console.log(colors.magenta("Target3 fulfilled."));
 
           await updateAttribute(
             item,
@@ -622,7 +612,6 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         await updateAttribute(item, 'expired', true);
 
         const amount = item.remainingQuantity / price;
-        // await marketSell(item.currency, amount);
 
         if (!(await marketSell(item.currency, amount))) {
           log(item, {
@@ -664,6 +653,8 @@ const processSignals = async (item: any): Promise<any> => {
         checkSignalValidity(item).then((status: string) => {
           if (status === 'valid') {
             processBuy(item).then(() => resolve(item));
+          } else {
+            resolve(item);
           }
         });
       } else {
