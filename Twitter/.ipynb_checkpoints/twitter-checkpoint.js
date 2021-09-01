@@ -67,4 +67,4 @@ const accounts = readCsv(accountPath).map((item) => item.name);
   writeCsv(allTweets, textPath);
 })();
 
-// First deduplicate the CSV by Id, finally select just those which are for today
+// First deduplicate the CSV by Id, then sort by date, finally select just those which are for today
