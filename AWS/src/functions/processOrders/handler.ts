@@ -37,6 +37,10 @@ const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const validItems = await getValidItems();
 
+  console.log(
+    colors.magenta((<any>validItems).map((item: any) => item.orderId))
+  );
+
   for (const validItem of <any>validItems) {
     validItem.marketPrice = await getPrice(validItem.currency);
     const val = await processSignals(validItem);
@@ -609,6 +613,9 @@ const checkSignalValidity = async (item: any): Promise<string> => {
         !item.fulfilledEntries.length &&
         item.marketPrice >= item.target[0]
       ) {
+        log(item, {
+          event: `Signal expired due to missing the Target1 before entering the trade.`
+        });
         await updateAttribute(item, 'expired', true);
         resolve('invalid');
       } else {
@@ -627,6 +634,10 @@ const checkStoploss = async (item: any): Promise<boolean> => {
       const price = item.marketPrice;
 
       if (price <= item.stoploss * (1 + priceTolerance)) {
+        log(item, {
+          event: `Signal expired due to stoploss hit.`
+        });
+
         await updateAttribute(item, 'expired', true);
 
         const amount = item.remainingQuantity / price;
