@@ -349,7 +349,8 @@ const handleEntries = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'entry1',
             quantity: quantityToBuy,
-            price
+            price,
+            timestamp: +new Date()
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
@@ -391,7 +392,8 @@ const handleEntries = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'entry2',
             quantity: quantityToBuy,
-            price
+            price,
+            timestamp: +new Date()
           });
           await updateAttribute(item, 'transactions', item.transactions);
 
@@ -435,7 +437,8 @@ const handleEntries = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'entry3',
             quantity: quantityToBuy,
-            price
+            price,
+            timestamp: +new Date()
           });
           await updateAttribute(item, 'transactions', item.transactions);
 
@@ -491,7 +494,8 @@ const checkTargets = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'target1',
             quantity: quantityToSell,
-            price
+            price,
+            timestamp: +new Date()
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
@@ -535,7 +539,8 @@ const checkTargets = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'target2',
             quantity: quantityToSell,
-            price
+            price,
+            timestamp: +new Date()
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
@@ -576,7 +581,8 @@ const checkTargets = async (item: any): Promise<{}> => {
           item.transactions.push({
             type: 'target3',
             quantity: quantityToSell,
-            price
+            price,
+            timestamp: +new Date()
           });
 
           await updateAttribute(item, 'transactions', item.transactions);
@@ -653,7 +659,8 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         item.transactions.push({
           type: 'stoploss',
           quantity: item.remainingQuantity,
-          price
+          price,
+          timestamp: +new Date()
         });
         await updateAttribute(item, 'transactions', item.transactions);
 
