@@ -35,7 +35,7 @@
 
 ## Dashboard
 
-> - Create a new app on [AWS Amplifier](https://console.aws.amazon.com/amplify/home)
+> - Create a new app on [AWS Amplifier](https://console.aws.amazon.com/amplify/home) or follow the [complete guide](https://aws.amazon.com/getting-started/hands-on/build-react-app-amplify-graphql/module-one/?e=gs2020&p=build-a-react-app-intro)
 > - sudo npm install -g @aws-amplify/cli --unsafe-perm=true
 > - amplify pull [appId]
 > - amplify configure
