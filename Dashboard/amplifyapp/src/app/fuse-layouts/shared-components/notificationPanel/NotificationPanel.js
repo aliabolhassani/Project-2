@@ -21,7 +21,10 @@ import {
   selectNotifications,
 } from './store/dataSlice';
 import reducer from './store';
-import { closeNotificationPanel, toggleNotificationPanel } from './store/stateSlice';
+import {
+  closeNotificationPanel,
+  toggleNotificationPanel,
+} from './store/stateSlice';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -62,38 +65,38 @@ function NotificationPanel(props) {
       dispatch(addNotification(NotificationModel(obj)));
     }
 
-    setTimeout(
-      () =>
-        createNotification({
-          message: 'Great Job! this is awesome.',
-          options: { variant: 'success' },
-        }),
-      4000
-    );
+    // setTimeout(
+    //   () =>
+    //     createNotification({
+    //       message: 'Great Job! this is awesome.',
+    //       options: { variant: 'success' },
+    //     }),
+    //   4000
+    // );
 
-    setTimeout(
-      () =>
-        createNotification({ message: 'Hey there is a problem!', options: { variant: 'error' } }),
-      6000
-    );
+    // setTimeout(
+    //   () =>
+    //     createNotification({ message: 'Hey there is a problem!', options: { variant: 'error' } }),
+    //   6000
+    // );
 
-    setTimeout(
-      () =>
-        createNotification({
-          message: 'There might be a problem here!',
-          options: { variant: 'warning' },
-        }),
-      8000
-    );
+    // setTimeout(
+    //   () =>
+    //     createNotification({
+    //       message: 'There might be a problem here!',
+    //       options: { variant: 'warning' },
+    //     }),
+    //   8000
+    // );
 
-    setTimeout(
-      () =>
-        createNotification({
-          message: 'This is some general information.',
-          options: { variant: 'info' },
-        }),
-      10000
-    );
+    // setTimeout(
+    //   () =>
+    //     createNotification({
+    //       message: 'This is some general information.',
+    //       options: { variant: 'info' },
+    //     }),
+    //   10000
+    // );
   }, [dispatch]);
 
   useEffect(() => {
@@ -142,7 +145,7 @@ function NotificationPanel(props) {
       dispatch(closeNotificationPanel());
     }
     // eslint-disable-next-line
-	}, [location, dispatch]);
+  }, [location, dispatch]);
 
   function handleClose() {
     dispatch(closeNotificationPanel());
@@ -159,22 +162,27 @@ function NotificationPanel(props) {
     <SwipeableDrawer
       classes={{ paper: clsx(classes.root) }}
       open={state}
-      anchor="right"
+      anchor='right'
       onOpen={(ev) => {}}
       onClose={(ev) => dispatch(toggleNotificationPanel())}
       disableSwipeToOpen
     >
-      <IconButton className="m-4 absolute top-0 right-0 z-999" onClick={handleClose}>
-        <Icon color="action">close</Icon>
+      <IconButton
+        className='m-4 absolute top-0 right-0 z-999'
+        onClick={handleClose}
+      >
+        <Icon color='action'>close</Icon>
       </IconButton>
       {notifications.length > 0 ? (
-        <FuseScrollbars className="p-16">
-          <div className="flex flex-col">
-            <div className="flex justify-between items-end pt-136 mb-36">
-              <Typography className="text-28 font-semibold leading-none">Notifications</Typography>
+        <FuseScrollbars className='p-16'>
+          <div className='flex flex-col'>
+            <div className='flex justify-between items-end pt-136 mb-36'>
+              <Typography className='text-28 font-semibold leading-none'>
+                Notifications
+              </Typography>
               <Typography
-                className="text-12 underline cursor-pointer"
-                color="secondary"
+                className='text-12 underline cursor-pointer'
+                color='secondary'
                 onClick={handleDismissAll}
               >
                 dismiss all
@@ -183,7 +191,7 @@ function NotificationPanel(props) {
             {notifications.map((item) => (
               <NotificationCard
                 key={item.id}
-                className="mb-16"
+                className='mb-16'
                 item={item}
                 onClose={handleDismiss}
               />
@@ -191,8 +199,8 @@ function NotificationPanel(props) {
           </div>
         </FuseScrollbars>
       ) : (
-        <div className="flex flex-1 items-center justify-center p-16">
-          <Typography className="text-24 text-center" color="textSecondary">
+        <div className='flex flex-1 items-center justify-center p-16'>
+          <Typography className='text-24 text-center' color='textSecondary'>
             There are no notifications for now.
           </Typography>
         </div>
@@ -201,4 +209,7 @@ function NotificationPanel(props) {
   );
 }
 
-export default withReducer('notificationPanel', reducer)(memo(NotificationPanel));
+export default withReducer(
+  'notificationPanel',
+  reducer
+)(memo(NotificationPanel));

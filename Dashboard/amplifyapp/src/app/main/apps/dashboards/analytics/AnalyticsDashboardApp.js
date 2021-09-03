@@ -42,34 +42,40 @@ function AnalyticsDashboardApp() {
   };
 
   return (
-    <div className="w-full">
+    <div className='w-full'>
       <Widget1 data={widgets.widget1} />
       <motion.div
-        className="flex flex-col md:flex-row sm:p-8 container"
+        className='flex flex-col md:flex-row sm:p-8 container'
         variants={container}
-        initial="hidden"
-        animate="show"
+        initial='hidden'
+        animate='show'
       >
-        <div className="flex flex-1 flex-col min-w-0 pt-16">
+        <div className='flex flex-1 flex-col min-w-0 pt-16'>
           <Typography
             component={motion.div}
             variants={item}
-            className="px-16 pb-8 text-18 font-normal"
-            color="textSecondary"
+            className='px-16 pb-8 text-18 font-normal'
+            color='textSecondary'
           >
-            How are your active users trending over time?
+            How does your portfolio work?
           </Typography>
 
-          <div className="flex flex-col sm:flex sm:flex-row pb-32">
-            <motion.div variants={item} className="widget flex w-full sm:w-1/3 p-16">
+          <div className='flex flex-col sm:flex sm:flex-row pb-32'>
+            <motion.div
+              variants={item}
+              className='widget flex w-full sm:w-1/3 p-16'
+            >
               <Widget2 data={widgets.widget2} />
             </motion.div>
 
-            <motion.div variants={item} className="widget flex w-full sm:w-1/3 p-16">
+            <motion.div
+              variants={item}
+              className='widget flex w-full sm:w-1/3 p-16'
+            >
               <Widget3 data={widgets.widget3} />
             </motion.div>
 
-            <motion.div variants={item} className="widget w-full sm:w-1/3 p-16">
+            <motion.div variants={item} className='widget w-full sm:w-1/3 p-16'>
               <Widget4 data={widgets.widget4} />
             </motion.div>
           </div>
@@ -77,16 +83,16 @@ function AnalyticsDashboardApp() {
           <Typography
             component={motion.div}
             variants={item}
-            className="px-16 pb-8 text-18 font-normal"
-            color="textSecondary"
+            className='px-16 pb-8 text-18 font-normal'
+            color='textSecondary'
           >
-            How many pages your users visit?
+            How did market perform?
           </Typography>
 
-          <motion.div variants={item} className="widget w-full p-16 pb-48">
+          <motion.div variants={item} className='widget w-full p-16 pb-48'>
             <Widget5 data={widgets.widget5} />
           </motion.div>
-
+          {/* 
           <Typography
             component={motion.div}
             variants={item}
@@ -98,50 +104,50 @@ function AnalyticsDashboardApp() {
 
           <motion.div variants={item} className="widget w-full p-16 pb-32">
             <Widget6 data={widgets.widget6} />
-          </motion.div>
+          </motion.div> */}
         </div>
 
-        <div className="flex flex-wrap w-full md:w-320 pt-16">
-          <div className="mb-32 w-full sm:w-1/2 md:w-full">
+        <div className='flex flex-wrap w-full md:w-320 pt-16'>
+          {/* <div className='mb-32 w-full sm:w-1/2 md:w-full'>
             <Typography
               component={motion.div}
               variants={item}
-              className="px-16 pb-8 text-18 font-normal"
-              color="textSecondary"
+              className='px-16 pb-8 text-18 font-normal'
+              color='textSecondary'
             >
               What are your top devices?
             </Typography>
 
-            <motion.div variants={item} className="widget w-full p-16">
+            <motion.div variants={item} className='widget w-full p-16'>
               <Widget7 data={widgets.widget7} />
             </motion.div>
-          </div>
+          </div> */}
 
-          <div className="mb-32 w-full sm:w-1/2 md:w-full">
+          <div className='mb-32 w-full sm:w-1/2 md:w-full'>
             <Typography
               component={motion.div}
               variants={item}
-              className="px-16 pb-8 text-18 font-normal"
-              color="textSecondary"
+              className='px-16 pb-8 text-18 font-normal'
+              color='textSecondary'
             >
-              How are your sales?
+              How is your balance?
             </Typography>
 
-            <motion.div variants={item} className="widget w-full p-16">
+            <motion.div variants={item} className='widget w-full p-16'>
               <Widget8 data={widgets.widget8} />
             </motion.div>
           </div>
 
-          <div className="mb-32 w-full sm:w-1/2 md:w-full">
+          <div className='mb-32 w-full sm:w-1/2 md:w-full'>
             <Typography
               component={motion.div}
               variants={item}
-              className="px-16 pb-8 text-18 font-normal lg:pt-0"
-              color="textSecondary"
+              className='px-16 pb-8 text-18 font-normal lg:pt-0'
+              color='textSecondary'
             >
-              What are your top campaigns?
+              What are your top coins?
             </Typography>
-            <motion.div variants={item} className="widget w-full p-16">
+            <motion.div variants={item} className='widget w-full p-16'>
               <Widget9 data={widgets.widget9} />
             </motion.div>
           </div>
@@ -151,4 +157,7 @@ function AnalyticsDashboardApp() {
   );
 }
 
-export default withReducer('analyticsDashboardApp', reducer)(AnalyticsDashboardApp);
+export default withReducer(
+  'analyticsDashboardApp',
+  reducer
+)(AnalyticsDashboardApp);

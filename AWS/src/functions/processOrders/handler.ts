@@ -37,10 +37,6 @@ const processOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const validItems = await getValidItems();
 
-  console.log(
-    colors.magenta((<any>validItems).map((item: any) => item.orderId))
-  );
-
   for (const validItem of <any>validItems) {
     validItem.marketPrice = await getPrice(validItem.currency);
     const val = await processSignals(validItem);
@@ -154,10 +150,10 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       const target2 = item.target[1];
       const target3 = item.target[2];
 
-      const quantity1 = item.filter(
+      const quantity1 = item.transactions.filter(
         (element: any) => element.type === 'entry1'
       ).quantity;
-      const quantity2 = item.filter(
+      const quantity2 = item.transactions.filter(
         (element: any) => element.type === 'entry2'
       ).quantity;
 
@@ -171,7 +167,7 @@ const adjustTarget1 = async (item: any): Promise<{}> => {
       item.target = [newTarget1, newTarget2, newTarget3];
       await updateAttribute(item, 'target', item.target);
 
-      log(item, {
+      await log(item, {
         event: `Target adjusted (1); new targets: ${item.target}.`
       });
 
@@ -194,13 +190,13 @@ const adjustTarget2 = async (item: any): Promise<{}> => {
       const target2 = item.target[1];
       const target3 = item.target[2];
 
-      const quantity1 = item.filter(
+      const quantity1 = item.transactions.filter(
         (element: any) => element.type === 'entry1'
       ).quantity;
-      const quantity2 = item.filter(
+      const quantity2 = item.transactions.filter(
         (element: any) => element.type === 'entry2'
       ).quantity;
-      const quantity3 = item.filter(
+      const quantity3 = item.transactions.filter(
         (element: any) => element.type === 'entry3'
       ).quantity;
 
@@ -216,7 +212,7 @@ const adjustTarget2 = async (item: any): Promise<{}> => {
       item.target = [newTarget1, newTarget2, newTarget3];
       await updateAttribute(item, 'target', item.target);
 
-      log(item, {
+      await log(item, {
         event: `Target adjusted (2); new targets: ${item.target}.`
       });
 
@@ -234,7 +230,7 @@ const adjustStoploss1 = async (item: any): Promise<{}> => {
       item.stoploss = item.entry[0];
       await updateAttribute(item, 'stoploss', item.stoploss);
 
-      log(item, {
+      await log(item, {
         event: `Stoploss adjusted (1); new stoploss: ${item.stoploss}.`
       });
 
@@ -252,7 +248,7 @@ const adjustStoploss2 = async (item: any): Promise<{}> => {
       item.stoploss = item.target[0];
       await updateAttribute(item, 'stoploss', item.stoploss);
 
-      log(item, {
+      await log(item, {
         event: `Stoploss adjusted (2); new stoploss: ${item.stoploss}.`
       });
 
@@ -267,15 +263,19 @@ const adjustStoploss3 = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const entry1 = item.filter((element: any) => element.type === 'entry1');
-      const entry2 = item.filter((element: any) => element.type === 'entry2');
+      const entry1 = item.transactions.filter(
+        (element: any) => element.type === 'entry1'
+      );
+      const entry2 = item.transactions.filter(
+        (element: any) => element.type === 'entry2'
+      );
       item.stoploss =
         (entry1.price * entry1.quantity + entry2.price * entry2.quantity) /
         (entry1.quantity + entry2.quantity);
 
       await updateAttribute(item, 'stoploss', item.stoploss);
 
-      log(item, {
+      await log(item, {
         event: `Stoploss adjusted (3); new stoploss: ${item.stoploss}.`
       });
 
@@ -290,9 +290,15 @@ const adjustStoploss4 = async (item: any): Promise<{}> => {
       resolve: (value?: {} | PromiseLike<{}>) => void,
       reject: (reason?: any) => void
     ) => {
-      const entry1 = item.filter((element: any) => element.type === 'entry1');
-      const entry2 = item.filter((element: any) => element.type === 'entry2');
-      const entry3 = item.filter((element: any) => element.type === 'entry3');
+      const entry1 = item.transactions.filter(
+        (element: any) => element.type === 'entry1'
+      );
+      const entry2 = item.transactions.filter(
+        (element: any) => element.type === 'entry2'
+      );
+      const entry3 = item.transactions.filter(
+        (element: any) => element.type === 'entry3'
+      );
       item.stoploss =
         (entry1.price * entry1.quantity +
           entry2.price * entry2.quantity +
@@ -301,7 +307,7 @@ const adjustStoploss4 = async (item: any): Promise<{}> => {
 
       await updateAttribute(item, 'stoploss', item.stoploss);
 
-      log(item, {
+      await log(item, {
         event: `Stoploss adjusted (4); new stoploss: ${item.stoploss}.`
       });
 
@@ -327,14 +333,14 @@ const handleEntries = async (item: any): Promise<{}> => {
           const amount = quantityToBuy / price;
 
           if ((await marketBuy(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error buying on Entry1 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledEntries.push(price);
+          item.fulfilledEntries.push(item.entry[0]);
 
           await updateAttribute(
             item,
@@ -342,7 +348,7 @@ const handleEntries = async (item: any): Promise<{}> => {
             item.fulfilledEntries
           );
 
-          log(item, {
+          await log(item, {
             event: `Entry1 hit; quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
           });
 
@@ -367,14 +373,14 @@ const handleEntries = async (item: any): Promise<{}> => {
           const amount = quantityToBuy / price;
 
           if ((await marketBuy(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error buying on Entry2 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledEntries.push(price);
+          item.fulfilledEntries.push(item.entry[1]);
 
           await updateAttribute(
             item,
@@ -385,7 +391,7 @@ const handleEntries = async (item: any): Promise<{}> => {
           const remainingQuantity = item.remainingQuantity + quantityToBuy;
           await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          log(item, {
+          await log(item, {
             event: `Entry2 hit; remainingQuantity: ${remainingQuantity}, quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
           });
 
@@ -397,8 +403,8 @@ const handleEntries = async (item: any): Promise<{}> => {
           });
           await updateAttribute(item, 'transactions', item.transactions);
 
-          await adjustTarget1(item);
           await adjustStoploss3(item);
+          await adjustTarget1(item);
         }
       } else if (
         item.fulfilledEntries.length === 2 &&
@@ -412,14 +418,14 @@ const handleEntries = async (item: any): Promise<{}> => {
           const amount = quantityToBuy / price;
 
           if ((await marketBuy(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error buying on Entry3 quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledEntries.push(price);
+          item.fulfilledEntries.push(item.entry[2]);
 
           await updateAttribute(
             item,
@@ -430,7 +436,7 @@ const handleEntries = async (item: any): Promise<{}> => {
           const remainingQuantity = item.remainingQuantity + quantityToBuy;
           await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          log(item, {
+          await log(item, {
             event: `Entry3 hit; remainingQuantity: ${remainingQuantity}, quantityToBuy: ${quantityToBuy}, amount: ${amount}, price: ${price}.`
           });
 
@@ -442,8 +448,8 @@ const handleEntries = async (item: any): Promise<{}> => {
           });
           await updateAttribute(item, 'transactions', item.transactions);
 
-          await adjustTarget2(item);
           await adjustStoploss4(item);
+          await adjustTarget2(item);
         }
       }
 
@@ -469,14 +475,14 @@ const checkTargets = async (item: any): Promise<{}> => {
           const amount = quantityToSell / price;
 
           if ((await marketSell(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error selling on Target1 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledTargets.push(price);
+          item.fulfilledTargets.push(item.target[0]);
 
           await updateAttribute(
             item,
@@ -487,7 +493,7 @@ const checkTargets = async (item: any): Promise<{}> => {
           const remainingQuantity = item.remainingQuantity - quantityToSell;
           await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          log(item, {
+          await log(item, {
             event: `Target1 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
@@ -514,14 +520,14 @@ const checkTargets = async (item: any): Promise<{}> => {
           const amount = quantityToSell / price;
 
           if ((await marketSell(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error selling on Target2 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledTargets.push(price);
+          item.fulfilledTargets.push(item.target[1]);
 
           await updateAttribute(
             item,
@@ -532,7 +538,7 @@ const checkTargets = async (item: any): Promise<{}> => {
           const remainingQuantity = item.remainingQuantity - quantityToSell;
           await updateAttribute(item, 'remainingQuantity', remainingQuantity);
 
-          log(item, {
+          await log(item, {
             event: `Target2 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
@@ -557,14 +563,14 @@ const checkTargets = async (item: any): Promise<{}> => {
           const amount = quantityToSell / price;
 
           if ((await marketSell(item.currency, amount)) === null) {
-            log(item, {
+            await log(item, {
               event: `Error selling on Target3 at price: ${price}, quantityToSell: ${quantityToSell}.`
             });
             resolve(item);
             return;
           }
 
-          item.fulfilledTargets.push(price);
+          item.fulfilledTargets.push(item.target[2]);
 
           await updateAttribute(
             item,
@@ -574,7 +580,7 @@ const checkTargets = async (item: any): Promise<{}> => {
 
           const remainingQuantity = item.remainingQuantity - quantityToSell; // 0 quantity
 
-          log(item, {
+          await log(item, {
             event: `Target3 hit at price: ${price}, remainingQuantity: ${remainingQuantity}, quantityToSell: ${quantityToSell}.`
           });
 
@@ -619,7 +625,7 @@ const checkSignalValidity = async (item: any): Promise<string> => {
         !item.fulfilledEntries.length &&
         item.marketPrice >= item.target[0]
       ) {
-        log(item, {
+        await log(item, {
           event: `Signal expired due to missing the Target1 before entering the trade.`
         });
         await updateAttribute(item, 'expired', true);
@@ -640,7 +646,7 @@ const checkStoploss = async (item: any): Promise<boolean> => {
       const price = item.marketPrice;
 
       if (price <= item.stoploss * (1 + priceTolerance)) {
-        log(item, {
+        await log(item, {
           event: `Signal expired due to stoploss hit.`
         });
 
@@ -649,7 +655,7 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         const amount = item.remainingQuantity / price;
 
         if ((await marketSell(item.currency, amount)) === null) {
-          log(item, {
+          await log(item, {
             event: `Error selling on Stoploss hit; remainingQuantity: ${item.remainingQuantity}, amount: ${amount}.`
           });
           resolve(true);
@@ -664,7 +670,7 @@ const checkStoploss = async (item: any): Promise<boolean> => {
         });
         await updateAttribute(item, 'transactions', item.transactions);
 
-        log(item, {
+        await log(item, {
           event: `Stoploss hit; remainingQuantity: ${item.remainingQuantity}, amount: ${amount}.`
         });
 

@@ -39,14 +39,14 @@ const navigationConfig = [
           },
         ],
       },
-      {
-        id: 'calendar',
-        title: 'Calendar',
-        translate: 'CALENDAR',
-        type: 'item',
-        icon: 'today',
-        url: '/apps/calendar',
-      },
+      // {
+      //   id: 'calendar',
+      //   title: 'Calendar',
+      //   translate: 'CALENDAR',
+      //   type: 'item',
+      //   icon: 'today',
+      //   url: '/apps/calendar',
+      // },
       {
         id: 'e-commerce',
         title: 'E-Commerce',
