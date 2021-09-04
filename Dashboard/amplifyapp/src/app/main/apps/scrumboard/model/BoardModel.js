@@ -42,8 +42,8 @@ const sampleMembers = [
   },
   {
     id: '36027j1930450d8bf7b10158',
-    name: 'John Doe',
-    avatar: 'assets/images/avatars/Velazquez.jpg',
+    name: 'Ali Abolhassani',
+    avatar: 'assets/images/avatars/Ali.jpg',
   },
 ];
 

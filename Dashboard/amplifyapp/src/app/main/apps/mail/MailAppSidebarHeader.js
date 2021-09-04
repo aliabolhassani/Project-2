@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 const accounts = {
   creapond: 'johndoe@creapond.com',
-  withinpixels: 'johndoe@withinpixels.com',
+  withinpixels: 'ali.abolhassani@gmail.com',
 };
 
 function MailAppSidebarHeader(props) {
@@ -21,13 +21,13 @@ function MailAppSidebarHeader(props) {
   }
 
   return (
-    <div className="flex flex-col justify-center h-full p-24">
-      <div className="flex items-center flex-1">
+    <div className='flex flex-col justify-center h-full p-24'>
+      <div className='flex items-center flex-1'>
         <Icon
           component={motion.span}
           initial={{ scale: 0 }}
           animate={{ scale: 1, transition: { delay: 0.2 } }}
-          className="text-24 md:text-32"
+          className='text-24 md:text-32'
         >
           mail
         </Icon>
@@ -36,7 +36,7 @@ function MailAppSidebarHeader(props) {
           initial={{ x: -20 }}
           animate={{ x: 0, transition: { delay: 0.2 } }}
           delay={300}
-          className="text-16 md:text-24 mx-12 font-semibold"
+          className='text-16 md:text-24 mx-12 font-semibold'
         >
           {t('APP_TITLE')}
         </Typography>
@@ -47,15 +47,15 @@ function MailAppSidebarHeader(props) {
         animate={{ y: 0, opacity: 1, transition: { delay: 0.3 } }}
       >
         <TextField
-          className="w-full"
-          id="account-selection"
+          className='w-full'
+          id='account-selection'
           select
           label={selectedAccount}
           value={selectedAccount}
           onChange={handleAccountChange}
-          placeholder="Select Account"
-          margin="normal"
-          variant="filled"
+          placeholder='Select Account'
+          margin='normal'
+          variant='filled'
         >
           {Object.keys(accounts).map((key, value) => (
             <MenuItem key={key} value={key}>

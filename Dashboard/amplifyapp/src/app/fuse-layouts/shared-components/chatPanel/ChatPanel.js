@@ -58,7 +58,8 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     zIndex: 1000,
     backgroundColor: theme.palette.background.paper,
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    boxShadow:
+      '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     transform: 'translate3d(0,0,0)',
     transition: theme.transitions.create(['transform'], {
       easing: theme.transitions.easing.easeInOut,
@@ -77,7 +78,8 @@ const useStyles = makeStyles((theme) => ({
       maxWidth: '100%',
       '&.opened': {
         transform: 'translate3d(0,0,0)!important',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        boxShadow:
+          '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       },
     },
   },
@@ -97,7 +99,9 @@ const useStyles = makeStyles((theme) => ({
 function ChatPanel(props) {
   const dispatch = useDispatch();
   const contacts = useSelector(selectContacts);
-  const selectedContactId = useSelector(({ chatPanel }) => chatPanel.contacts.selectedContactId);
+  const selectedContactId = useSelector(
+    ({ chatPanel }) => chatPanel.contacts.selectedContactId
+  );
   const state = useSelector(({ chatPanel }) => chatPanel.state);
   const theme = useTheme();
 
@@ -112,7 +116,9 @@ function ChatPanel(props) {
   });
 
   const classes = useStyles(props);
-  const selectedContact = contacts.find((_contact) => _contact.id === selectedContactId);
+  const selectedContact = contacts.find(
+    (_contact) => _contact.id === selectedContactId
+  );
 
   const handleDocumentKeyDown = useCallback(
     (event) => {
@@ -161,47 +167,48 @@ function ChatPanel(props) {
   }, [state, dispatch]);
 
   return (
-    <div className={clsx(classes.root, { opened: state })} {...handlers}>
-      <div className={clsx(classes.panel, { opened: state }, 'flex flex-col max-w-full')} ref={ref}>
-        <AppBar position="static" className="shadow-md">
-          <Toolbar className="px-4">
-            {(!state || !selectedContactId) && (
-              <div className="flex flex-1 items-center px-4">
-                <IconButton
-                  className=""
-                  color="inherit"
-                  onClick={(ev) => dispatch(openChatPanel())}
-                >
-                  <Icon className="text-32">chat</Icon>
-                </IconButton>
-                {!selectedContactId && (
-                  <Typography className="mx-8 text-16" color="inherit">
-                    Team Chat
-                  </Typography>
-                )}
-              </div>
-            )}
-            {state && selectedContact && (
-              <div className="flex flex-1 items-center px-12">
-                <Avatar src={selectedContact.avatar} />
-                <Typography className="mx-16 text-16" color="inherit">
-                  {selectedContact.name}
-                </Typography>
-              </div>
-            )}
-            <div className="flex px-4">
-              <IconButton onClick={(ev) => dispatch(closeChatPanel())} color="inherit">
-                <Icon>close</Icon>
-              </IconButton>
-            </div>
-          </Toolbar>
-        </AppBar>
-        <Paper className="flex flex-1 flex-row min-h-px shadow-0">
-          <ContactList className="flex flex-shrink-0" />
-          <Chat className="flex flex-1 z-10" />
-        </Paper>
-      </div>
-    </div>
+    <div></div>
+    // <div className={clsx(classes.root, { opened: state })} {...handlers}>
+    //   <div className={clsx(classes.panel, { opened: state }, 'flex flex-col max-w-full')} ref={ref}>
+    //     <AppBar position="static" className="shadow-md">
+    //       <Toolbar className="px-4">
+    //         {(!state || !selectedContactId) && (
+    //           <div className="flex flex-1 items-center px-4">
+    //             <IconButton
+    //               className=""
+    //               color="inherit"
+    //               onClick={(ev) => dispatch(openChatPanel())}
+    //             >
+    //               <Icon className="text-32">chat</Icon>
+    //             </IconButton>
+    //             {!selectedContactId && (
+    //               <Typography className="mx-8 text-16" color="inherit">
+    //                 Team Chat
+    //               </Typography>
+    //             )}
+    //           </div>
+    //         )}
+    //         {state && selectedContact && (
+    //           <div className="flex flex-1 items-center px-12">
+    //             <Avatar src={selectedContact.avatar} />
+    //             <Typography className="mx-16 text-16" color="inherit">
+    //               {selectedContact.name}
+    //             </Typography>
+    //           </div>
+    //         )}
+    //         <div className="flex px-4">
+    //           <IconButton onClick={(ev) => dispatch(closeChatPanel())} color="inherit">
+    //             <Icon>close</Icon>
+    //           </IconButton>
+    //         </div>
+    //       </Toolbar>
+    //     </AppBar>
+    //     <Paper className="flex flex-1 flex-row min-h-px shadow-0">
+    //       <ContactList className="flex flex-shrink-0" />
+    //       <Chat className="flex flex-1 z-10" />
+    //     </Paper>
+    //   </div>
+    // </div>
   );
 }
 

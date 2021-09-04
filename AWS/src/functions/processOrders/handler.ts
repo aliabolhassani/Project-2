@@ -135,7 +135,7 @@ const getPrice = async (currency: any): Promise<number> => {
 };
 
 const martingaleSteps = [15, 30, 55];
-const priceTolerance = 0.005;
+const priceTolerance = 0.0025;
 
 const adjustTarget1 = async (item: any): Promise<{}> => {
   return new Promise(
