@@ -132,7 +132,7 @@ const analyticsDashboardAppDB = {
       },
       series: [
         {
-          name: 'Daily Return',
+          name: 'Daily PNL',
           data: [221, 428, 380, 471, 413, 344, 494],
         },
       ],

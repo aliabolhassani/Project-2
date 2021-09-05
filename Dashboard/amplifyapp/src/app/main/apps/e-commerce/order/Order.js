@@ -50,17 +50,17 @@ function Order(props) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { delay: 0.1 } }}
-        className="flex flex-col flex-1 items-center justify-center h-full"
+        className='flex flex-col flex-1 items-center justify-center h-full'
       >
-        <Typography color="textSecondary" variant="h5">
+        <Typography color='textSecondary' variant='h5'>
           There is no such order!
         </Typography>
         <Button
-          className="mt-24"
+          className='mt-24'
           component={Link}
-          variant="outlined"
-          to="/apps/e-commerce/orders"
-          color="inherit"
+          variant='outlined'
+          to='/apps/e-commerce/orders'
+          color='inherit'
         >
           Go to Orders Page
         </Button>
@@ -76,35 +76,35 @@ function Order(props) {
       }}
       header={
         order && (
-          <div className="flex flex-1 w-full items-center justify-between">
-            <div className="flex flex-1 flex-col items-center sm:items-start">
+          <div className='flex flex-1 w-full items-center justify-between'>
+            <div className='flex flex-1 flex-col items-center sm:items-start'>
               <motion.div
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1, transition: { delay: 0.3 } }}
               >
                 <Typography
-                  className="flex items-center sm:mb-12"
+                  className='flex items-center sm:mb-12'
                   component={Link}
-                  role="button"
-                  to="/apps/e-commerce/orders"
-                  color="inherit"
+                  role='button'
+                  to='/apps/e-commerce/orders'
+                  color='inherit'
                 >
-                  <Icon className="text-20">
+                  <Icon className='text-20'>
                     {theme.direction === 'ltr' ? 'arrow_back' : 'arrow_forward'}
                   </Icon>
-                  <span className="mx-4 font-medium">Orders</span>
+                  <span className='mx-4 font-medium'>Orders</span>
                 </Typography>
               </motion.div>
 
-              <div className="flex flex-col min-w-0 items-center sm:items-start">
+              <div className='flex flex-col min-w-0 items-center sm:items-start'>
                 <motion.div
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1, transition: { delay: 0.3 } }}
                 >
-                  <Typography className="text-16 sm:text-20 truncate font-semibold">
+                  <Typography className='text-16 sm:text-20 truncate font-semibold'>
                     {`Order ${order.reference}`}
                   </Typography>
-                  <Typography variant="caption" className="font-medium">
+                  <Typography variant='caption' className='font-medium'>
                     {`From ${order.customer.firstName} ${order.customer.lastName}`}
                   </Typography>
                 </motion.div>
@@ -117,20 +117,20 @@ function Order(props) {
         <Tabs
           value={tabValue}
           onChange={handleChangeTab}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
+          indicatorColor='primary'
+          textColor='primary'
+          variant='scrollable'
+          scrollButtons='auto'
           classes={{ root: 'w-full h-64' }}
         >
-          <Tab className="h-64" label="Order Details" />
-          <Tab className="h-64" label="Products" />
-          <Tab className="h-64" label="Invoice" />
+          <Tab className='h-64' label='Order Details' />
+          <Tab className='h-64' label='Products' />
+          <Tab className='h-64' label='Invoice' />
         </Tabs>
       }
       content={
         order && (
-          <div className="p-16 sm:p-24 max-w-2xl w-full">
+          <div className='p-16 sm:p-24 max-w-2xl w-full'>
             {tabValue === 0 && <OrderDetailsTab />}
             {tabValue === 1 && <ProductsTab />}
             {tabValue === 2 && <InvoiceTab order={order} />}

@@ -20,7 +20,9 @@ import OrdersTableHead from './OrdersTableHead';
 function OrdersTable(props) {
   const dispatch = useDispatch();
   const orders = useSelector(selectOrders);
-  const searchText = useSelector(({ eCommerceApp }) => eCommerceApp.orders.searchText);
+  const searchText = useSelector(
+    ({ eCommerceApp }) => eCommerceApp.orders.searchText
+  );
 
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
@@ -72,7 +74,7 @@ function OrdersTable(props) {
   }
 
   function handleClick(item) {
-    props.history.push(`/apps/e-commerce/orders/${item.id}`);
+    // props.history.push(`/apps/e-commerce/orders/${item.id}`);
   }
 
   function handleCheck(event, id) {
@@ -112,9 +114,9 @@ function OrdersTable(props) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { delay: 0.1 } }}
-        className="flex flex-1 items-center justify-center h-full"
+        className='flex flex-1 items-center justify-center h-full'
       >
-        <Typography color="textSecondary" variant="h5">
+        <Typography color='textSecondary' variant='h5'>
           There are no orders!
         </Typography>
       </motion.div>
@@ -122,9 +124,9 @@ function OrdersTable(props) {
   }
 
   return (
-    <div className="w-full flex flex-col">
-      <FuseScrollbars className="flex-grow overflow-x-auto">
-        <Table stickyHeader className="min-w-xl" aria-labelledby="tableTitle">
+    <div className='w-full flex flex-col'>
+      <FuseScrollbars className='flex-grow overflow-x-auto'>
+        <Table stickyHeader className='min-w-xl' aria-labelledby='tableTitle'>
           <OrdersTableHead
             selectedOrderIds={selected}
             order={order}
@@ -140,17 +142,24 @@ function OrdersTable(props) {
               [
                 (o) => {
                   switch (order.id) {
-                    case 'id': {
-                      return parseInt(o.id, 10);
+                    case 'validity': {
+                      return o.expired ? 'Expired' : 'Valid';
                     }
-                    case 'customer': {
-                      return o.customer.firstName;
+                    case 'date': {
+                      return `${
+                        new Date(o.timestamp).toISOString().split('T')[0]
+                      } at ${
+                        new Date(o.timestamp).toTimeString().split(' ')[0]
+                      }`;
                     }
-                    case 'payment': {
-                      return o.payment.method;
+                    case 'transactions': {
+                      return o.transactions.length;
                     }
-                    case 'status': {
-                      return o.status[0].name;
+                    case 'fulfilledTargets': {
+                      return o.fulfilledTargets.length;
+                    }
+                    case 'fulfilledEntries': {
+                      return o.fulfilledEntries.length;
                     }
                     default: {
                       return o[order.id];
@@ -165,16 +174,19 @@ function OrdersTable(props) {
                 const isSelected = selected.indexOf(n.id) !== -1;
                 return (
                   <TableRow
-                    className="h-72 cursor-pointer"
+                    className='h-72 cursor-pointer'
                     hover
-                    role="checkbox"
+                    role='checkbox'
                     aria-checked={isSelected}
                     tabIndex={-1}
                     key={n.id}
                     selected={isSelected}
                     onClick={(event) => handleClick(n)}
                   >
-                    <TableCell className="w-40 md:w-64 text-center" padding="none">
+                    <TableCell
+                      className='w-40 md:w-64 text-center'
+                      padding='none'
+                    >
                       <Checkbox
                         checked={isSelected}
                         onClick={(event) => event.stopPropagation()}
@@ -182,33 +194,90 @@ function OrdersTable(props) {
                       />
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {n.id}
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.currency}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {n.reference}
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {new Date(n.timestamp).toISOString().split('T')[0]}
+                      {' at '}
+                      {new Date(n.timestamp).toTimeString().split(' ')[0]}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16 truncate" component="th" scope="row">
-                      {`${n.customer.firstName} ${n.customer.lastName}`}
+                    <TableCell
+                      className='p-4 md:p-16 truncate'
+                      component='th'
+                      scope='row'
+                    >
+                      {/* {`${n.customer.firstName} ${n.customer.lastName}`} */}
+                      {n.expired ? 'Expired' : 'Valid'}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">
-                      <span>$</span>
-                      {n.total}
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                      // align='right'
+                    >
+                      {/* <span>$</span> */}
+                      {n.position}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {n.payment.method}
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.quantity}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      <OrdersStatus name={n.status[0].name} />
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {/* <OrdersStatus name={n.status[0].name} /> */}
+                      {n.leverage}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {n.date}
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.remainingQuantity}
+                    </TableCell>
+
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.transactions.length}
+                    </TableCell>
+
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.fulfilledTargets.length}
+                    </TableCell>
+
+                    <TableCell
+                      className='p-4 md:p-16'
+                      component='th'
+                      scope='row'
+                    >
+                      {n.fulfilledEntries.length}
                     </TableCell>
                   </TableRow>
                 );
@@ -218,8 +287,8 @@ function OrdersTable(props) {
       </FuseScrollbars>
 
       <TablePagination
-        className="flex-shrink-0 border-t-1"
-        component="div"
+        className='flex-shrink-0 border-t-1'
+        component='div'
         count={data.length}
         rowsPerPage={rowsPerPage}
         page={page}

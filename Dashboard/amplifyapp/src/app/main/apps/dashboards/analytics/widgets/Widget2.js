@@ -14,7 +14,7 @@ function Widget2(props) {
   return (
     <Card className='w-full rounded-20 shadow'>
       <div className='p-20 pb-0'>
-        <Typography className='h3 font-medium'>Daily Return</Typography>
+        <Typography className='h3 font-medium'>Daily PNL</Typography>
 
         <div className='flex flex-row flex-wrap items-center mt-12'>
           <Typography className='text-48 font-semibold leading-none tracking-tighter'>

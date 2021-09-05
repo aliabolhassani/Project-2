@@ -49,6 +49,26 @@ export const getItem = (orderId: string): Promise<{}> => {
   );
 };
 
+export const getAllItems = (): Promise<any> => {
+  return new Promise(
+    (
+      resolve: (value?: any | PromiseLike<any>) => void,
+      reject: (reason?: any) => void
+    ) => {
+      const params = {
+        TableName: 'Orders'
+      };
+      docClient.scan(params, (err, data) => {
+        if (err) {
+          reject(0);
+        } else {
+          resolve(data);
+        }
+      });
+    }
+  );
+};
+
 export const updateItem = (
   orderId: string,
   UpdateExpression: any,

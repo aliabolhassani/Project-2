@@ -19,45 +19,10 @@ import { removeOrders } from '../store/ordersSlice';
 
 const rows = [
   {
-    id: 'id',
+    id: 'currency',
     align: 'left',
     disablePadding: false,
-    label: 'ID',
-    sort: true,
-  },
-  {
-    id: 'reference',
-    align: 'left',
-    disablePadding: false,
-    label: 'Reference',
-    sort: true,
-  },
-  {
-    id: 'customer',
-    align: 'left',
-    disablePadding: false,
-    label: 'Customer',
-    sort: true,
-  },
-  {
-    id: 'total',
-    align: 'right',
-    disablePadding: false,
-    label: 'Total',
-    sort: true,
-  },
-  {
-    id: 'payment',
-    align: 'left',
-    disablePadding: false,
-    label: 'Payment',
-    sort: true,
-  },
-  {
-    id: 'status',
-    align: 'left',
-    disablePadding: false,
-    label: 'Status',
+    label: 'Currency',
     sort: true,
   },
   {
@@ -65,6 +30,62 @@ const rows = [
     align: 'left',
     disablePadding: false,
     label: 'Date',
+    sort: true,
+  },
+  {
+    id: 'validity',
+    align: 'left',
+    disablePadding: false,
+    label: 'Validity',
+    sort: true,
+  },
+  {
+    id: 'position',
+    // align: 'right',
+    disablePadding: false,
+    label: 'Position',
+    sort: true,
+  },
+  {
+    id: 'quantity',
+    align: 'left',
+    disablePadding: false,
+    label: 'Quantity',
+    sort: true,
+  },
+  {
+    id: 'leverage',
+    align: 'left',
+    disablePadding: false,
+    label: 'Leverage',
+    sort: true,
+  },
+  {
+    id: 'remainingQuantity',
+    align: 'left',
+    disablePadding: false,
+    label: 'Remaining Quantity',
+    sort: true,
+  },
+  {
+    id: 'transactions',
+    align: 'left',
+    disablePadding: false,
+    label: 'Transaction Count',
+    sort: true,
+  },
+  {
+    id: 'fulfilledTargets',
+    align: 'left',
+    disablePadding: false,
+    label: 'Target Level',
+    sort: true,
+  },
+  {
+    id: 'fulfilledEntries',
+    align: 'left',
+    disablePadding: false,
+    label: 'Transaction Count',
     sort: true,
   },
 ];
@@ -100,8 +121,8 @@ function OrdersTableHead(props) {
 
   return (
     <TableHead>
-      <TableRow className="h-48 sm:h-64">
-        <TableCell padding="none" className="w-40 md:w-64 text-center z-99">
+      <TableRow className='h-48 sm:h-64'>
+        <TableCell padding='none' className='w-40 md:w-64 text-center z-99'>
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < props.rowCount}
             checked={props.rowCount !== 0 && numSelected === props.rowCount}
@@ -116,13 +137,13 @@ function OrdersTableHead(props) {
             >
               <IconButton
                 aria-owns={selectedOrdersMenu ? 'selectedOrdersMenu' : null}
-                aria-haspopup="true"
+                aria-haspopup='true'
                 onClick={openSelectedOrdersMenu}
               >
                 <Icon>more_horiz</Icon>
               </IconButton>
               <Menu
-                id="selectedOrdersMenu"
+                id='selectedOrdersMenu'
                 anchorEl={selectedOrdersMenu}
                 open={Boolean(selectedOrdersMenu)}
                 onClose={closeSelectedOrdersMenu}
@@ -135,10 +156,10 @@ function OrdersTableHead(props) {
                       closeSelectedOrdersMenu();
                     }}
                   >
-                    <ListItemIcon className="min-w-40">
+                    <ListItemIcon className='min-w-40'>
                       <Icon>delete</Icon>
                     </ListItemIcon>
-                    <ListItemText primary="Remove" />
+                    <ListItemText primary='Remove' />
                   </MenuItem>
                 </MenuList>
               </Menu>
@@ -148,23 +169,27 @@ function OrdersTableHead(props) {
         {rows.map((row) => {
           return (
             <TableCell
-              className="p-4 md:p-16"
+              className='p-4 md:p-16'
               key={row.id}
               align={row.align}
               padding={row.disablePadding ? 'none' : 'normal'}
-              sortDirection={props.order.id === row.id ? props.order.direction : false}
+              sortDirection={
+                props.order.id === row.id ? props.order.direction : false
+              }
             >
               {row.sort && (
                 <Tooltip
-                  title="Sort"
-                  placement={row.align === 'right' ? 'bottom-end' : 'bottom-start'}
+                  title='Sort'
+                  placement={
+                    row.align === 'right' ? 'bottom-end' : 'bottom-start'
+                  }
                   enterDelay={300}
                 >
                   <TableSortLabel
                     active={props.order.id === row.id}
                     direction={props.order.direction}
                     onClick={createSortHandler(row.id)}
-                    className="font-semibold"
+                    className='font-semibold'
                   >
                     {row.label}
                   </TableSortLabel>
