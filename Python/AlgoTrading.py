@@ -80,27 +80,27 @@ def generate_signals(df):
     df['bollinger_long']= np.where(df['close'] < df['bollinger_lower_band'],1.0,0.0)
     df['bollinger_short']= np.where(df['close'] > df['bollinger_upper_band'],-1.0,0.0)
     df['bollinger_signal']= df['bollinger_long']+df['bollinger_short']
-    return generate_signals
 
-# df[['close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
-def execute_trade_strategy(signals, account):   
+    df[['close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
 
-    if signals["bollinger_long"]:
+    # return generate_signals
+    return df
+
+def execute_trade_strategy(signals, account):  
+    if signals.iloc[-1]["bollinger_long"] == 1:
         position = 'long'
     else:
         position = 'short'
 
     data = {
         "quantity": 10,
-        "origin": "mlTrader",
-        "strategy": "1",
-        "currency": "BTC/USDT1",
-        "stoploss": signals["bollinger_lower_band"],
-        "entry": [ signals["bollinger_mid_band"] ],
-        "leverage": 1,
+        "origin": "mlTrader",        
+        "currency": "BTC/USDT",
+        "stoploss": signals.iloc[-1]["bollinger_lower_band"],
+        "entry": [ signals.iloc[-1]["bollinger_mid_band"] ],        
         "market": "binance",
         "expired": False,
-        "target": [ signals["bollinger_upper_band"] ],
+        "target": [ signals.iloc[-1]["bollinger_upper_band"] ],
         "position": position
     }
     requests.post("https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev/registerOrders", data=data)
