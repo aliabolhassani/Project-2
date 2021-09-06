@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from pandas_datareader import data, wb
 import matplotlib as mpl
-from pl_finance import candlestick_ohlc
+from mpl_finance import candlestick_ohlc
 import matplotlib.dates as dates
 import datetime
 # %matplotlib inline
@@ -71,21 +71,19 @@ def generate_signals(df):
     #set window for bollinger band 
     bollinger_window = 20 
     #calculate rolling mean and SD
-    df['bollinger_mid_band']= df['Close'].rolling(window=bollinger_window).mean()
-    df['bollinger-std'] = df['Close'].rolling(window=20).std()
+    df['bollinger_mid_band']= df['close'].rolling(window=bollinger_window).mean()
+    df['bollinger-std'] = df['close'].rolling(window=20).std()
     #calculate upper and lower 
     df['bollinger_upper_band'] = df['bollinger_mid_band'] + (df['bollinger_std']*1)
     df['bollinger_lower_band'] = df['bollinger_mid_band'] - (df['bollinger_std']*1)
     #calculate bollinger band trading signal
-    df['bollinger_long']= np.where(df['Close'] < df['bollinger_lower_band'],1.0,0.0)
-    df['bollinger_short']= np.where(df['Close'] > df['bollinger_upper_band'],-1.0,0.0)
+    df['bollinger_long']= np.where(df['close'] < df['bollinger_lower_band'],1.0,0.0)
+    df['bollinger_short']= np.where(df['close'] > df['bollinger_upper_band'],-1.0,0.0)
     df['bollinger_signal']= df['bollinger_long']+df['bollinger_short']
     return generate_signals
 
-df[['Close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
-def execute_trade_strategy(signals, account):
-
-    
+# df[['close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
+def execute_trade_strategy(signals, account):   
     data = {
         "quantity": 10,
         "origin": "mlTrader",

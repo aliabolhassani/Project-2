@@ -85,7 +85,7 @@ const rows = [
     id: 'fulfilledEntries',
     align: 'left',
     disablePadding: false,
-    label: 'Transaction Count',
+    label: 'Entry Level',
     sort: true,
   },
 ];
