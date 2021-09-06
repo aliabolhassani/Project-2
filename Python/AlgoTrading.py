@@ -72,7 +72,7 @@ def generate_signals(df):
     bollinger_window = 20 
     #calculate rolling mean and SD
     df['bollinger_mid_band']= df['close'].rolling(window=bollinger_window).mean()
-    df['bollinger-std'] = df['close'].rolling(window=20).std()
+    df['bollinger_std'] = df['close'].rolling(window=20).std()
     #calculate upper and lower 
     df['bollinger_upper_band'] = df['bollinger_mid_band'] + (df['bollinger_std']*1)
     df['bollinger_lower_band'] = df['bollinger_mid_band'] - (df['bollinger_std']*1)
@@ -93,12 +93,13 @@ def execute_trade_strategy(signals, account):
         "entry": [ 74.09, 70.93, 65.49 ],
         "leverage": 1,
         "market": "binance",
-        "expired": false,
+        "expired": False,
         "target": [ 77.19, 81.63, 89.06 ],
         "position": "buy"
     }
-
     requests.post("https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev/registerOrders", data=data)
+
+
 # @TODO: Set the initial configurations and update the main loop to use asyncio
 # Set the initial account configuration
 account, df = initialize(10000)
@@ -119,6 +120,9 @@ async def main():
         # Fetch new prices data
         new_df = await loop.run_in_executor(None, fetch_data)
         df = df.append(new_df, ignore_index=True)
+
+
+        print(df.head())
 
         # Execute the trading strategy
         min_window = 22
