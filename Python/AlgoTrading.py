@@ -84,18 +84,24 @@ def generate_signals(df):
 
 # df[['close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
 def execute_trade_strategy(signals, account):   
+
+    if signals["bollinger_long"]:
+        position = 'long'
+    else:
+        position = 'short'
+
     data = {
         "quantity": 10,
         "origin": "mlTrader",
         "strategy": "1",
-        "currency": "FIL/USDT1",
-        "stoploss": 60.87,
-        "entry": [ 74.09, 70.93, 65.49 ],
+        "currency": "BTC/USDT1",
+        "stoploss": signals["bollinger_lower_band"],
+        "entry": [ signals["bollinger_mid_band"] ],
         "leverage": 1,
         "market": "binance",
         "expired": False,
-        "target": [ 77.19, 81.63, 89.06 ],
-        "position": "buy"
+        "target": [ signals["bollinger_upper_band"] ],
+        "position": position
     }
     requests.post("https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev/registerOrders", data=data)
 
