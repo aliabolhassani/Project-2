@@ -11,8 +11,7 @@ import matplotlib as mpl
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as dates
 import datetime
-# %matplotlib inline
-
+import json
 
 def initialize(cash=None):
     """Initialize the plot, data storage, and account balances."""
@@ -103,8 +102,12 @@ def execute_trade_strategy(signals, account):
         "target": [ signals.iloc[-1]["bollinger_upper_band"] ],
         "position": position
     }
-    requests.post("https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev/registerOrders", data=data)
 
+    headers = {
+        'content-type': "application/json"
+        }
+    url = "https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev/registerOrders"
+    requests.request("POST", url, data=json.dumps(data), headers=headers)
 
 # @TODO: Set the initial configurations and update the main loop to use asyncio
 # Set the initial account configuration
@@ -126,9 +129,6 @@ async def main():
         # Fetch new prices data
         new_df = await loop.run_in_executor(None, fetch_data)
         df = df.append(new_df, ignore_index=True)
-
-
-        print(df.head())
 
         # Execute the trading strategy
         min_window = 22
