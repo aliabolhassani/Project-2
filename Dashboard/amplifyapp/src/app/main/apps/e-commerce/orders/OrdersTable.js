@@ -217,7 +217,6 @@ function OrdersTable(props) {
                       component='th'
                       scope='row'
                     >
-                      {/* {`${n.customer.firstName} ${n.customer.lastName}`} */}
                       {n.expired ? 'Expired' : 'Valid'}
                     </TableCell>
 
@@ -244,7 +243,6 @@ function OrdersTable(props) {
                       component='th'
                       scope='row'
                     >
-                      {/* <OrdersStatus name={n.status[0].name} /> */}
                       {n.leverage}
                     </TableCell>
 

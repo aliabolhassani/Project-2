@@ -7,14 +7,16 @@ import { Router } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import { Auth } from './auth';
 import withAppProviders from './withAppProviders';
-// import axios from 'axios';
+import axios from 'axios';
 
 /**
  * Axios HTTP Request defaults
  */
-// axios.defaults.baseURL = "";
-// axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-// axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
+axios.defaults.baseURL =
+  'https://t0p0376spd.execute-api.us-east-1.amazonaws.com/dev';
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+axios.defaults.headers.common['Content-Type'] =
+  'application/x-www-form-urlencoded';
 
 const App = () => {
   return (
@@ -29,7 +31,8 @@ const App = () => {
                 horizontal: 'right',
               }}
               classes={{
-                containerRoot: 'bottom-0 right-0 mb-52 md:mb-68 mr-8 lg:mr-80 z-99',
+                containerRoot:
+                  'bottom-0 right-0 mb-52 md:mb-68 mr-8 lg:mr-80 z-99',
               }}
             >
               <FuseLayout />

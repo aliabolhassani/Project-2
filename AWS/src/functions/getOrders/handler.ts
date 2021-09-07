@@ -22,15 +22,14 @@ const getOrders: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     }
   });
 
-  const info = await getAllItems();
+  const info = (await getAllItems())['Items'].map((item: any) => ({
+    ...item,
+    id: item.orderId
+  }));
+
   // console.log(colors.white(info));
 
-  return formatJSONResponse(
-    info.Items
-    // {
-    // items: info.Items
-    // }
-  );
+  return formatJSONResponse(info);
 };
 
 export const main = middyfy(getOrders);
