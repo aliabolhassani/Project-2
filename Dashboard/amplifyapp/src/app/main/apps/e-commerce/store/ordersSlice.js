@@ -17,6 +17,7 @@ export const getOrders = createAsyncThunk(
     const { data } = await axios.post('/getOrders', {});
 
     // console.log(data);
+    // return data.sort((a, b) => a.timestamp < b.timestamp);
     return data;
   }
 );

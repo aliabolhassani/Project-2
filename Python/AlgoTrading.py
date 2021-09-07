@@ -81,7 +81,7 @@ def generate_signals(df):
     df['bollinger_signal']= df['bollinger_long']+df['bollinger_short']
 
     df[['close','bollinger_mid_band','bollinger_upper_band','bollinger_lower_band']].plot(figsize=(20,10))
-
+    
     # return generate_signals
     return df
 
@@ -93,7 +93,7 @@ def execute_trade_strategy(signals, account):
 
     data = {
         "quantity": 10,
-        "origin": "mlTrader",        
+        "origin": "Smart-Trader",        
         "currency": "BTC/USDT",
         "stoploss": signals.iloc[-1]["bollinger_lower_band"],
         "entry": [ signals.iloc[-1]["bollinger_mid_band"] ],        
