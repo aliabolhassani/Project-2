@@ -6,18 +6,15 @@ import {
 import axios from 'axios';
 import mock from '../../../../../@fake-db/mock';
 
-axios.defaults.adapter = mock.originalAdapter;
+// axios.defaults.adapter = mock.originalAdapter;
 
 export const getOrders = createAsyncThunk(
   'eCommerceApp/orders/getOrders',
   async () => {
-    // const response = await axios.get('/api/e-commerce-app/orders');
-    // const data = await response.data;
+    const response = await axios.get('/api/e-commerce-app/orders');
+    const data = await response.data;
 
-    const { data } = await axios.post('/getOrders', {});
-
-    // console.log(data);
-    // return data.sort((a, b) => a.timestamp < b.timestamp);
+    // const { data } = await axios.post('/getOrders', {});
     return data;
   }
 );
